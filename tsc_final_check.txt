@@ -1,0 +1,2 @@
+src/app/(dashboard)/list/parents/[id]/page.tsx(113,40): error TS1003: Identifier expected.
+src/app/(dashboard)/list/parents/[id]/page.tsx(118,20): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
