@@ -9,7 +9,8 @@
     "lint": "next lint",
     "seed": "ts-node prisma/seed.ts",
     "dev:with-seed": "npm run seed && next dev",
-    "start:with-seed": "npm run seed && next start"
+    "start:with-seed": "npm run seed && next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
