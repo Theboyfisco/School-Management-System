@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import useSWR from "swr";
@@ -41,7 +41,10 @@ const SearchBar = () => {
     { revalidateOnFocus: false }
   );
 
-  const results: SearchResult[] = data?.results || [];
+  const results: SearchResult[] = useMemo(
+    () => (data?.results as SearchResult[]) || [],
+    [data]
+  );
 
   const handleResultClick = useCallback((result: SearchResult) => {
     router.push(result.url);

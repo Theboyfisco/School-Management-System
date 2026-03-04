@@ -16,6 +16,18 @@ import prisma from "./prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { createClient } from "@/utils/supabase/server";
 
+const isDev = process.env.NODE_ENV === "development";
+const log = (...args: unknown[]) => {
+  if (isDev) {
+    console.log(...args);
+  }
+};
+const logError = (...args: unknown[]) => {
+  if (isDev) {
+    console.error(...args);
+  }
+};
+
 export type CurrentState = { 
   success: boolean; 
   error: boolean;
@@ -39,7 +51,7 @@ export const createSubject = async (
     // revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true };
   }
 };
@@ -64,7 +76,7 @@ export const updateSubject = async (
     // revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true };
   }
 };
@@ -114,7 +126,7 @@ export const deleteSubject = async (
     // revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.error('Error deleting subject:', err);
+    logError('Error deleting subject:', err);
     return { 
       success: false, 
       error: true,
@@ -135,7 +147,7 @@ export const createClass = async (
     // revalidatePath("/list/class");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true, message: "Failed to create class" };
   }
 };
@@ -155,7 +167,7 @@ export const updateClass = async (
     // revalidatePath("/list/class");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true, message: "Failed to update class" };
   }
 };
@@ -175,7 +187,7 @@ export const deleteClass = async (
     // revalidatePath("/list/class");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true };
   }
 };
@@ -201,7 +213,7 @@ export const createAdmin = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth error:', authError);
+      logError('Supabase Auth error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -221,14 +233,14 @@ export const createAdmin = async (
 
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.error('Error creating admin:', err);
+    logError('Error creating admin:', err);
     
     if (authUser) {
       try {
         const supabase = createAdminClient();
         await supabase.auth.admin.deleteUser(authUser.id);
       } catch (cleanupErr) {
-        console.error('Cleanup error:', cleanupErr);
+        logError('Cleanup error:', cleanupErr);
       }
     }
     
@@ -254,12 +266,12 @@ export const deleteAdmin = async (
     const { error } = await supabase.auth.admin.deleteUser(id);
     
     if (error) {
-      console.error('Supabase Auth delete error:', error);
+      logError('Supabase Auth delete error:', error);
     }
 
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.error('Error deleting admin:', err);
+    logError('Error deleting admin:', err);
     return { success: false, error: true, message: "Failed to delete admin" };
   }
 };
@@ -306,7 +318,7 @@ export const createTeacher = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth error:', authError);
+      logError('Supabase Auth error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -340,15 +352,15 @@ export const createTeacher = async (
     revalidatePath("/list/teachers");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.error('Error creating teacher:', err);
+    logError('Error creating teacher:', err);
 
     if (authUser) {
       try {
-        console.log('Cleaning up: Deleting Supabase auth user');
+        log('Cleaning up: Deleting Supabase auth user');
         const supabase = createAdminClient();
         await supabase.auth.admin.deleteUser(authUser.id);
       } catch (deleteErr) {
-        console.error('Error deleting Supabase auth user:', deleteErr);
+        logError('Error deleting Supabase auth user:', deleteErr);
       }
     }
 
@@ -378,7 +390,7 @@ export const updateTeacher = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth update error:', authError);
+      logError('Supabase Auth update error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -407,7 +419,7 @@ export const updateTeacher = async (
     // revalidatePath("/list/teachers");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true, message: err.message || "An unexpected error occurred" };
   }
 };
@@ -419,7 +431,7 @@ export const deleteTeacher = async (
   const id = data.get("id") as string;
   
   if (!id) {
-    console.error('No teacher ID provided');
+    logError('No teacher ID provided');
     return { success: false, error: true, message: 'Teacher ID is required' };
   }
 
@@ -463,7 +475,7 @@ export const deleteTeacher = async (
     const { error: authError } = await supabase.auth.admin.deleteUser(id);
 
     if (authError) {
-      console.error('Supabase Auth deletion error:', authError);
+      logError('Supabase Auth deletion error:', authError);
       // We don't necessarily return error here since DB deletion succeeded, 
       // but in production we'd want to handle this sync issue
     }
@@ -471,7 +483,7 @@ export const deleteTeacher = async (
     // revalidatePath("/list/teachers");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.error('Error deleting teacher:', err);
+    logError('Error deleting teacher:', err);
     return { 
       success: false, 
       error: true, 
@@ -484,7 +496,7 @@ export const createStudent = async (
   currentState: CurrentState,
   data: StudentSchema
 ) => {
-  console.log('Creating student with data:', data);
+  log('Creating student with data:', data);
   let authUser = null;
   
   try {
@@ -499,7 +511,7 @@ export const createStudent = async (
     });
 
     if (existingStudent) {
-      console.log('Student with this email or username already exists');
+      log('Student with this email or username already exists');
       return { 
         success: false, 
         error: true,
@@ -513,7 +525,7 @@ export const createStudent = async (
     });
 
     if (classItem && classItem.capacity === classItem._count.students) {
-      console.log('Class is at capacity');
+      log('Class is at capacity');
       return { 
         success: false, 
         error: true,
@@ -521,7 +533,7 @@ export const createStudent = async (
       };
     }
 
-    console.log('Creating Supabase Auth user');
+    log('Creating Supabase Auth user');
     const supabase = createAdminClient();
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: data.email || `${data.username}@student.academia.connect`,
@@ -545,7 +557,7 @@ export const createStudent = async (
       return { success: false, error: true, message: "Failed to create auth user" };
     }
 
-    console.log('Creating database record');
+    log('Creating database record');
     const student = await prisma.student.create({
       data: {
         id: authUser.id,
@@ -564,20 +576,20 @@ export const createStudent = async (
         parentId: data.parentId,
       },
     });
-    console.log('Database record created:', student.id);
+    log('Database record created:', student.id);
 
     revalidatePath("/list/students");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.error('Error creating student:', err);
+    logError('Error creating student:', err);
     
     if (authUser) {
       try {
-        console.log('Cleaning up: Deleting Supabase auth user');
+        log('Cleaning up: Deleting Supabase auth user');
         const supabase = createAdminClient();
         await supabase.auth.admin.deleteUser(authUser.id);
       } catch (deleteErr) {
-        console.error('Error deleting Supabase auth user:', deleteErr);
+        logError('Error deleting Supabase auth user:', deleteErr);
       }
     }
     
@@ -609,7 +621,7 @@ export const updateStudent = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth update error:', authError);
+      logError('Supabase Auth update error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -636,7 +648,7 @@ export const updateStudent = async (
     // revalidatePath("/list/students");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.log(err);
+    logError(err);
     return { success: false, error: true, message: err.message || "An unexpected error occurred" };
   }
 };
@@ -667,7 +679,7 @@ export const deleteStudent = async (
     // revalidatePath("/list/students");
     return { success: true, error: false, message: "" };
   } catch (err) {
-    console.error('Error deleting student:', err);
+    logError('Error deleting student:', err);
     return { success: false, error: true, message: "Failed to delete student" };
   }
 };
@@ -910,7 +922,7 @@ export const deleteParent = async (
       message: 'Parent deleted successfully'
     };
   } catch (err) {
-    console.error('Error deleting parent:', err);
+    logError('Error deleting parent:', err);
     return { 
       success: false, 
       error: true,
@@ -968,7 +980,7 @@ export const createParent = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth error:', authError);
+      logError('Supabase Auth error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -1002,14 +1014,14 @@ export const createParent = async (
     // revalidatePath("/list/parents");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.error('Error creating parent:', err);
+    logError('Error creating parent:', err);
     
     if (authUser) {
       try {
         const supabase = createAdminClient();
         await supabase.auth.admin.deleteUser(authUser.id);
       } catch (deleteErr) {
-        console.error('Error deleting Supabase auth user:', deleteErr);
+        logError('Error deleting Supabase auth user:', deleteErr);
       }
     }
     
@@ -1042,7 +1054,7 @@ export const updateParent = async (
     });
 
     if (authError) {
-      console.error('Supabase Auth update error:', authError);
+      logError('Supabase Auth update error:', authError);
       return { success: false, error: true, message: authError.message };
     }
 
@@ -1079,7 +1091,7 @@ export const updateParent = async (
     // revalidatePath("/list/parents");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
-    console.error('Error updating parent:', err);
+    logError('Error updating parent:', err);
     return { success: false, error: true, message: err.message || 'Failed to update parent' };
   }
 };
@@ -1101,7 +1113,7 @@ export const createAssignment = async (
     revalidatePath("/list/assignments");
     return { success: true, error: false, message: "Assignment created successfully" };
   } catch (err) {
-    console.error('Error creating assignment:', err);
+    logError('Error creating assignment:', err);
     return { success: false, error: true, message: 'Failed to create assignment' };
   }
 };
@@ -1125,7 +1137,7 @@ export const updateAssignment = async (
     revalidatePath("/list/assignments");
     return { success: true, error: false, message: "Assignment updated successfully" };
   } catch (err) {
-    console.error('Error updating assignment:', err);
+    logError('Error updating assignment:', err);
     return { success: false, error: true, message: 'Failed to update assignment' };
   }
 };
@@ -1145,7 +1157,7 @@ export const deleteAssignment = async (
     revalidatePath("/list/assignments");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting assignment:', err);
+    logError('Error deleting assignment:', err);
     return { success: false, error: true, message: 'Failed to delete assignment' };
   }
 };
@@ -1178,7 +1190,7 @@ export const createResult = async (
     revalidatePath("/list/results");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error creating result:', err);
+    logError('Error creating result:', err);
     return { success: false, error: true, message: 'Failed to create result' };
   }
 };
@@ -1215,7 +1227,7 @@ export const updateResult = async (
     revalidatePath("/list/results");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error updating result:', err);
+    logError('Error updating result:', err);
     return { success: false, error: true, message: 'Failed to update result' };
   }
 };
@@ -1235,7 +1247,7 @@ export const deleteResult = async (
     revalidatePath("/list/results");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting result:', err);
+    logError('Error deleting result:', err);
     return { success: false, error: true, message: 'Failed to delete result' };
   }
 };
@@ -1263,7 +1275,7 @@ export const createAttendance = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error creating attendance:', err);
+    logError('Error creating attendance:', err);
     return { success: false, error: true, message: 'Failed to create attendance record' };
   }
 };
@@ -1293,7 +1305,7 @@ export const updateAttendance = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error updating attendance:', err);
+    logError('Error updating attendance:', err);
     return { success: false, error: true, message: 'Failed to update attendance record' };
   }
 };
@@ -1314,7 +1326,7 @@ export const deleteAttendance = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting attendance:', err);
+    logError('Error deleting attendance:', err);
     return { success: false, error: true, message: 'Failed to delete attendance record' };
   }
 };
@@ -1359,7 +1371,7 @@ export const createEvent = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error creating event:', err);
+    logError('Error creating event:', err);
     return { success: false, error: true, message: 'Failed to create event' };
   }
 };
@@ -1408,7 +1420,7 @@ export const updateEvent = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error updating event:', err);
+    logError('Error updating event:', err);
     return { success: false, error: true, message: 'Failed to update event' };
   }
 };
@@ -1429,7 +1441,7 @@ export const deleteEvent = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting event:', err);
+    logError('Error deleting event:', err);
     return { success: false, error: true, message: 'Failed to delete event' };
   }
 };
@@ -1450,7 +1462,7 @@ export const deleteAnnouncement = async (
     revalidatePath("/"); // Refresh dashboard
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting announcement:', err);
+    logError('Error deleting announcement:', err);
     return { success: false, error: true, message: 'Failed to delete announcement' };
   }
 };
@@ -1486,7 +1498,7 @@ export const createAnnouncement = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error creating announcement:', err);
+    logError('Error creating announcement:', err);
     return { success: false, error: true, message: 'Failed to create announcement' };
   }
 };
@@ -1526,7 +1538,7 @@ export const updateAnnouncement = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error updating announcement:', err);
+    logError('Error updating announcement:', err);
     return { success: false, error: true, message: 'Failed to update announcement' };
   }
 };
@@ -1611,7 +1623,7 @@ export const createMessage = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error creating message:', err);
+    logError('Error creating message:', err);
     return { success: false, error: true, message: 'Failed to create message' };
   }
 };
@@ -1669,7 +1681,7 @@ export const updateMessage = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error updating message:', err);
+    logError('Error updating message:', err);
     return { success: false, error: true, message: 'Failed to update message' };
   }
 };
@@ -1711,7 +1723,7 @@ export const deleteMessage = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error deleting message:', err);
+    logError('Error deleting message:', err);
     return { success: false, error: true, message: 'Failed to delete message' };
   }
 };
@@ -1749,7 +1761,7 @@ export const markMessageAsRead = async (
     revalidatePath("/");
     return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.error('Error marking message as read:', err);
+    logError('Error marking message as read:', err);
     return { success: false, error: true, message: 'Failed to mark message as read' };
   }
 };
