@@ -17,6 +17,19 @@ const AttendanceChart = ({
 }: {
   data: { name: string; present: number; absent: number }[];
 }) => {
+  const isDataEmpty = !data || data.length === 0 || data.every(d => d.present === 0 && d.absent === 0);
+
+  if (isDataEmpty) {
+    return (
+      <div className="h-full min-h-[250px] flex items-center justify-center">
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <div className="text-4xl mb-2">📊</div>
+          <p>No attendance data for this period</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <ResponsiveContainer width="100%" height="90%">

@@ -3,7 +3,7 @@ import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
 import CountChart from "@/components/CountChart";
 import EventCalendarContainer from "@/components/EventCalendarContainer";
-import FinanceChart from "@/components/FinanceChart";
+import Performance from "@/components/Performance";
 import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
@@ -78,7 +78,7 @@ const TeacherPage = ({
             </div>
             <div className="flex-1 p-4 min-h-[380px]">
               <div className="h-96 w-full">
-                <FinanceChart />
+                <Performance />
               </div>
             </div>
           </div>

@@ -149,3 +149,58 @@ export const assignmentSchema = z.object({
 });
 
 export type AssignmentSchema = z.infer<typeof assignmentSchema>;
+
+export const eventSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Title is required!" }),
+  description: z.string().optional(),
+  startTime: z.coerce.date({ message: "Start time is required!" }),
+  endTime: z.coerce.date({ message: "End time is required!" }),
+  classId: z.coerce.number().optional().nullable(),
+});
+
+export type EventSchema = z.infer<typeof eventSchema>;
+
+export const announcementSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Title is required!" }),
+  description: z.string().min(1, { message: "Description is required!" }),
+  date: z.coerce.date({ message: "Date is required!" }),
+  classId: z.coerce.number().optional().nullable(),
+});
+
+export type AnnouncementSchema = z.infer<typeof announcementSchema>;
+
+export const attendanceSchema = z.object({
+  id: z.coerce.number().optional(),
+  date: z.coerce.date({ message: "Date is required!" }),
+  present: z.coerce.boolean({ message: "Presence status is required!" }),
+  studentId: z.string().min(1, { message: "Student is required!" }),
+  lessonId: z.coerce.number().min(1, { message: "Lesson is required!" }),
+});
+
+export type AttendanceSchema = z.infer<typeof attendanceSchema>;
+
+export const resultSchema = z.object({
+  id: z.coerce.number().optional(),
+  score: z.coerce.number().min(0, { message: "Score must be at least 0" }),
+  studentId: z.string().min(1, { message: "Student is required!" }),
+  examId: z.coerce.number().optional().nullable(),
+  assignmentId: z.coerce.number().optional().nullable(),
+});
+
+export type ResultSchema = z.infer<typeof resultSchema>;
+
+export const messageSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Subject is required!" }),
+  content: z.string().min(1, { message: "Content is required!" }),
+  category: z.string().min(1, { message: "Category is required!" }),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"], { message: "Priority is required!" }),
+  recipientId: z.string().optional().nullable(),
+  recipientRole: z.string().optional().nullable(),
+  isBroadcast: z.coerce.boolean().default(false),
+  parentId: z.coerce.number().optional().nullable(), // For replies
+});
+
+export type MessageSchema = z.infer<typeof messageSchema>;

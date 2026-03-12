@@ -157,7 +157,7 @@ const ParentForm = ({
           </div>
           <div className="text-center sm:text-left space-y-3 flex-1">
             <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display flex items-center justify-center sm:justify-start gap-2">
-                Guardian Profile
+                Guardian Photo
                 <SparklesIcon className="w-5 h-5 text-accent-500" />
             </h3>
             <p className="text-surface-500 dark:text-surface-400 text-sm max-w-sm leading-relaxed">
@@ -234,7 +234,7 @@ const ParentForm = ({
           <div className="space-y-6">
             <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <UserIcon className="w-4 h-4" />
-              Authorized Identity
+              Guardian Profile
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <InputField
@@ -246,7 +246,7 @@ const ParentForm = ({
                 required
               />
               <InputField
-                label="Surname"
+                label="Last Name"
                 name="surname"
                 register={register}
                 error={errors?.surname}
@@ -255,7 +255,7 @@ const ParentForm = ({
               />
             </div>
             <InputField
-                label="Primary Phone"
+                label="Phone Number"
                 name="phone"
                 register={register}
                 error={errors?.phone}
@@ -271,10 +271,10 @@ const ParentForm = ({
              <div className="space-y-6">
                 <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
                     <MapPinIcon className="w-4 h-4" />
-                    Resident Details
+                    Resident Location
                 </h3>
                 <InputField
-                    label="Home Address"
+                    label="Residential Address"
                     name="address"
                     register={register}
                     error={errors?.address}

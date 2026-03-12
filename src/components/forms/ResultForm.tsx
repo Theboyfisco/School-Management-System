@@ -1,158 +1,245 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import InputField from "../InputField";
+import CustomDropdown from "../CustomDropdown";
+import BaseForm from "./BaseForm";
+import { resultSchema, ResultSchema } from "@/lib/formValidationSchemas";
 import { createResult, updateResult } from "@/lib/actions";
-import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useFormState } from "react-dom";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
+import { 
+  TrophyIcon, 
+  UserIcon, 
+  AcademicCapIcon,
+  DocumentCheckIcon,
+  CheckCircleIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  BeakerIcon
+} from '@heroicons/react/24/outline';
 
-type ResultFormProps = {
+interface ResultFormProps {
   type: "create" | "update";
   data?: any;
   setOpen: Dispatch<SetStateAction<boolean>>;
   relatedData?: any;
-};
+}
 
-const ResultForm = ({ type, data, setOpen, relatedData }: ResultFormProps) => {
-  const router = useRouter();
-  const [assessmentType, setAssessmentType] = useState<'exam' | 'assignment'>('exam');
-  const [state, formAction] = useFormState(
-    type === "create" ? createResult : updateResult,
-    { success: false, error: false, message: "" }
+const ResultForm = ({
+  type,
+  data,
+  setOpen,
+  relatedData,
+}: ResultFormProps) => {
+  const [assessmentType, setAssessmentType] = useState<'exam' | 'assignment'>(
+    data?.examId ? 'exam' : (data?.assignmentId ? 'assignment' : 'exam')
   );
 
-  useEffect(() => {
-    if (state.success) {
-      toast.success(`Result ${type === "create" ? "created" : "updated"} successfully!`);
-      setOpen(false);
-      router.refresh();
-    } else if (state.error) {
-      toast.error(state.message || `Failed to ${type} result`);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    watch,
+  } = useForm<ResultSchema>({
+    resolver: zodResolver(resultSchema),
+    defaultValues: {
+      studentId: data?.studentId || '',
+      score: data?.score || 0,
+      examId: data?.examId || undefined,
+      assignmentId: data?.assignmentId || undefined,
+      id: data?.id || undefined,
+    } as any
+  });
+
+  const router = useRouter();
+
+  const onSubmit = handleSubmit(async (formData: ResultSchema) => {
+    const loadingToast = toast.loading(`${type === "create" ? "Recording" : "Updating"} result...`);
+    try {
+      // Ensure the other ID is null
+      if (assessmentType === 'exam') {
+        formData.assignmentId = null;
+      } else {
+        formData.examId = null;
+      }
+
+      const result = await (type === 'create' 
+        ? createResult({ success: false, error: false }, formData)
+        : updateResult({ success: false, error: false }, formData)
+      );
+
+      if (result?.success) {
+        toast.update(loadingToast, {
+          render: `Result ${type === "create" ? "recorded" : "updated"} successfully!`,
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+          icon: <CheckCircleIcon className="w-5 h-5 text-success-500" />
+        });
+        setOpen(false);
+        router.refresh();
+      } else {
+        toast.update(loadingToast, {
+          render: result?.message || "Operation failed",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000
+        });
+      }
+    } catch (error) {
+       toast.update(loadingToast, {
+        render: "A system error occurred",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000
+      });
     }
-  }, [state, router, type, setOpen]);
+  });
+
+  const studentOptions = (relatedData?.students || []).map((s: any) => ({
+    value: s.id,
+    label: `${s.name} ${s.surname}`,
+    icon: <UserIcon className="w-4 h-4" />
+  }));
+
+  const examOptions = (relatedData?.exams || []).map((e: any) => ({
+    value: e.id,
+    label: `${e.title} - ${e.lesson.subject.name} (${e.lesson.class.name})`,
+    icon: <AcademicCapIcon className="w-4 h-4" />
+  }));
+
+  const assignmentOptions = (relatedData?.assignments || []).map((a: any) => ({
+    value: a.id,
+    label: `${a.title} - ${a.lesson.subject.name} (${a.lesson.class.name})`,
+    icon: <DocumentCheckIcon className="w-4 h-4" />
+  }));
+
+  const typeOptions = [
+    { value: 'exam', label: 'Internal Exam', icon: <AcademicCapIcon className="w-4 h-4" /> },
+    { value: 'assignment', label: 'Class Assignment', icon: <DocumentCheckIcon className="w-4 h-4" /> },
+  ];
 
   return (
-    <form action={formAction} className="p-6 space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        {type === "create" ? "Create New Result" : "Update Result"}
-      </h2>
-      
-      {type === "update" && (
-        <input type="hidden" name="id" value={data?.id} />
-      )}
-
-      <div>
-        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Student
-        </label>
-        <select
-          id="studentId"
-          name="studentId"
-          defaultValue={data?.studentId || ""}
-          required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">Select a student</option>
-          {relatedData?.students?.map((student: any) => (
-            <option key={student.id} value={student.id}>
-              {student.name} {student.surname}
-            </option>
-          ))}
-        </select>
+    <BaseForm
+      title={type === "create" ? "Publish Academic Result" : "Modify Result Data"}
+      subtitle={type === "create" ? "Finalize student scores for exams or take-home assignments" : "Adjust existing grade entries and performance metrics"}
+      onSubmit={onSubmit}
+      onCancel={() => setOpen(false)}
+      submitLabel={type === "create" ? "Publish Result" : "Update Entry"}
+      isSubmitting={isSubmitting}
+    >
+      {/* Hero Accent Section */}
+      <div className="bg-gradient-to-br from-amber-50/50 to-primary-50/50 dark:from-amber-500/10 dark:to-primary-500/10 rounded-[2rem] p-8 border border-white dark:border-surface-800 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+              <TrophyIcon className="w-24 h-24" />
+          </div>
+          <div className="relative z-10 flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-white dark:bg-surface-800 shadow-xl flex items-center justify-center text-amber-500 ring-1 ring-surface-100 dark:ring-surface-700">
+                  <ChartBarIcon className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Performance Record</h3>
+                  <p className="text-surface-500 dark:text-surface-400 text-sm font-medium">Capture student achievements with precision and clarity.</p>
+              </div>
+          </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Assessment Type
-        </label>
-        <div className="flex space-x-4">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="assessmentType"
-              value="exam"
-              checked={assessmentType === 'exam'}
-              onChange={(e) => setAssessmentType(e.target.value as 'exam' | 'assignment')}
-              className="mr-2"
-            />
-            Exam
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="assessmentType"
-              value="assignment"
-              checked={assessmentType === 'assignment'}
-              onChange={(e) => setAssessmentType(e.target.value as 'exam' | 'assignment')}
-              className="mr-2"
-            />
-            Assignment
-          </label>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-4">
+        <div className="space-y-10">
+            {/* Identity & Context */}
+            <div className="space-y-6">
+                <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <UserIcon className="w-4 h-4" />
+                    Recipient Details
+                </h3>
+                
+                <CustomDropdown
+                    label="Target Student"
+                    name="studentId"
+                    options={studentOptions}
+                    value={watch("studentId")}
+                    onChange={(val) => setValue("studentId", val as string)}
+                    placeholder="Select Student"
+                    required
+                    searchable
+                />
+
+                <InputField
+                    label="Achieved Score (%)"
+                    name="score"
+                    type="number"
+                    register={register}
+                    error={errors?.score}
+                    placeholder="0-100"
+                    required
+                    icon={<BeakerIcon className="w-4 h-4" />}
+                />
+            </div>
+        </div>
+
+        <div className="space-y-10">
+            {/* Assessment Details */}
+            <div className="space-y-6">
+                <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <DocumentCheckIcon className="w-4 h-4" />
+                    Assessment Scope
+                </h3>
+                
+                <CustomDropdown
+                    label="Evaluation Category"
+                    name="assessmentType"
+                    options={typeOptions}
+                    value={assessmentType}
+                    onChange={(val) => {
+                        setAssessmentType(val as 'exam' | 'assignment');
+                        // Reset the other type IDs when switching
+                        if (val === 'exam') {
+                           setValue('assignmentId', undefined as any);
+                        } else {
+                           setValue('examId', undefined as any);
+                        }
+                    }}
+                    placeholder="Choose Type"
+                    required
+                />
+
+                {assessmentType === 'exam' ? (
+                    <CustomDropdown
+                        label="Specific Exam"
+                        name="examId"
+                        options={examOptions}
+                        value={watch("examId") || undefined}
+                        onChange={(val) => setValue("examId", val as number)}
+                        placeholder="Select Exam"
+                        required
+                        searchable
+                    />
+                ) : (
+                    <CustomDropdown
+                        label="Specific Assignment"
+                        name="assignmentId"
+                        options={assignmentOptions}
+                        value={watch("assignmentId") || undefined}
+                        onChange={(val) => setValue("assignmentId", val as number)}
+                        placeholder="Select Assignment"
+                        required
+                        searchable
+                    />
+                )}
+            </div>
         </div>
       </div>
 
-      <div>
-        <label htmlFor="assessmentId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {assessmentType === 'exam' ? 'Exam' : 'Assignment'}
-        </label>
-        <select
-          id="assessmentId"
-          name="assessmentId"
-          defaultValue={data?.examId || data?.assignmentId || ""}
-          required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">Select a {assessmentType}</option>
-          {assessmentType === 'exam' 
-            ? relatedData?.exams?.map((exam: any) => (
-                <option key={exam.id} value={exam.id}>
-                  {exam.title} - {exam.lesson.subject.name} ({exam.lesson.class.name})
-                </option>
-              ))
-            : relatedData?.assignments?.map((assignment: any) => (
-                <option key={assignment.id} value={assignment.id}>
-                  {assignment.title} - {assignment.lesson.subject.name} ({assignment.lesson.class.name})
-                </option>
-              ))
-          }
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="score" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Score
-        </label>
-        <input
-          type="number"
-          id="score"
-          name="score"
-          min="0"
-          max="100"
-          defaultValue={data?.score || ""}
-          required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-        />
-      </div>
-
-      <input type="hidden" name="assessmentType" value={assessmentType} />
-
-      <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lamaSky"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-lamaSky border border-transparent rounded-md hover:bg-lamaSky/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lamaSky"
-        >
-          {type === "create" ? "Create" : "Update"}
-        </button>
-      </div>
-    </form>
+      {type === "update" && data?.id && (
+        <input type="hidden" {...register('id')} />
+      )}
+    </BaseForm>
   );
 };
 
-export default ResultForm; 
+export default ResultForm;

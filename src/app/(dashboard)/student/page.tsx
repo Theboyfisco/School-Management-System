@@ -1,18 +1,23 @@
 import Announcements from "@/components/Announcements";
-import AttendanceChartContainer from "@/components/AttendanceChartContainer";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
-import CountChart from "@/components/CountChart";
+import Performance from "@/components/Performance";
+import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import EventCalendarContainer from "@/components/EventCalendarContainer";
-import FinanceChart from "@/components/FinanceChart";
 import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
 
-const StudentPage = ({
+import { createClient } from "@/utils/supabase/server";
+
+const StudentPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const currentUserId = user?.id || "student123";
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
@@ -42,18 +47,13 @@ const StudentPage = ({
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="card overflow-hidden flex flex-col">
               <div className="p-4 border-b border-surface-100 dark:border-surface-700/50">
-                <h3 className="section-header">My Statistics</h3>
-                <p className="section-subheader">Your academic metrics</p>
+                <h3 className="section-header">Academic Performance</h3>
+                <p className="section-subheader">Your grades and progress</p>
               </div>
-              <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
-                <CountChart data={[
-                  { name: 'Teachers', value: 5, color: 'bg-accent-500' },
-                  { name: 'Students', value: 20, color: 'bg-success-500' },
-                  { name: 'Classes', value: 1, color: 'bg-primary-500' },
-                  { name: 'Parents', value: 10, color: 'bg-warning-500' },
-                  { name: 'Events', value: 1, color: 'bg-danger-500' },
-                  { name: 'Ongoing', value: 0, color: 'bg-warning-400' },
-                ]} />
+              <div className="flex-1 p-4 min-h-[300px]">
+                <div className="h-72 w-full">
+                  <Performance />
+                </div>
               </div>
             </div>
 
@@ -63,21 +63,9 @@ const StudentPage = ({
                 <p className="section-subheader">Your attendance record</p>
               </div>
               <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
-                <div className="h-72 w-full">
-                  <AttendanceChartContainer />
+                <div className="h-72 w-full flex items-center justify-center">
+                   <StudentAttendanceCard id={currentUserId} />
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="card overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-surface-100 dark:border-surface-700/50">
-              <h3 className="section-header">Academic Performance</h3>
-              <p className="section-subheader">Grades and progress tracking</p>
-            </div>
-            <div className="flex-1 p-4 min-h-[380px]">
-              <div className="h-96 w-full">
-                <FinanceChart />
               </div>
             </div>
           </div>

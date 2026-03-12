@@ -1,7 +1,7 @@
-import Image from "next/image";
 import AttendanceChart from "./AttendanceChart";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 
 type AttendanceData = {
   date: Date;
@@ -113,8 +113,8 @@ const AttendanceChartContainer = async () => {
     <div className="bg-white dark:bg-gray-800 rounded-lg p-4 h-full transition-colors duration-200">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold my-4 text-gray-900 dark:text-white">{getTitle()}</h1>
-        <button aria-label="More attendance options" className="hover:bg-gray-100 dark:hover:bg-gray-700/50 p-1 rounded-full transition-colors">
-          <Image src="/more.png" alt="More options icon" width={20} height={20} className="dark:invert" />
+        <button aria-label="More attendance options" className="hover:bg-gray-100 dark:hover:bg-gray-700/50 p-1 rounded-full transition-colors text-gray-500">
+          <EllipsisHorizontalIcon className="w-5 h-5" />
         </button>
       </div>
       <AttendanceChart data={data}/>

@@ -170,8 +170,9 @@ const FormContainer = async ({ table, type, data, id, relatedData: passedRelated
         data={data}
         id={id}
         relatedData={relatedData}
-      />
-      {children}
+      >
+        {children}
+      </FormModal>
     </div>
   );
 };

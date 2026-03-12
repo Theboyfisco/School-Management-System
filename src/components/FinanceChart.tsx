@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+
 import {
   LineChart,
   Line,
@@ -80,9 +80,6 @@ const FinanceChart = () => {
     <div className="bg-white dark:bg-gray-800 rounded-xl w-full h-full p-4 transition-colors duration-200">
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Finance</h1>
-        <button className="hover:bg-gray-100 dark:hover:bg-gray-700/50 p-1 rounded-full transition-colors">
-          <Image src="/more.png" alt="" width={20} height={20} className="dark:invert" />
-        </button>
       </div>
       <ResponsiveContainer width="100%" height="90%">
         <LineChart

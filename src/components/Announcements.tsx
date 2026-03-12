@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import React from "react";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 
 type Announcement = {
   id: number;
@@ -69,16 +70,11 @@ const Announcements = ({ externalRefresh }: { externalRefresh?: boolean }) => {
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Announcements</h1>
         <button
-          onClick={() => router.push("/announcements")}
+          onClick={() => router.push("/list/announcements")}
           className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="View all announcements"
         >
-          <Image
-            src="/icons/more.svg"
-            alt="more"
-            width={16}
-            height={16}
-            className="dark:invert"
-          />
+          <EllipsisHorizontalIcon className="w-5 h-5 text-gray-400" />
         </button>
       </div>
       <div className="mt-3 space-y-2">

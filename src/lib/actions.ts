@@ -11,6 +11,18 @@ import {
   SubjectSchema,
   TeacherSchema,
   AssignmentSchema,
+  lessonSchema,
+  LessonSchema,
+  eventSchema,
+  EventSchema,
+  announcementSchema,
+  AnnouncementSchema,
+  attendanceSchema,
+  AttendanceSchema,
+  resultSchema,
+  ResultSchema,
+  messageSchema,
+  MessageSchema,
 } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -790,49 +802,58 @@ export const deleteExam = async (
 
 export const createLesson = async (
   currentState: CurrentState,
-  data: any
+  data: LessonSchema
 ) => {
   try {
+    const { name, day, startTime, endTime, subjectId, teacherId, classId } = data;
+
     await prisma.lesson.create({
       data: {
-        name: data.name,
-        subjectId: parseInt(data.subjectId),
-        teacherId: data.teacherId,
-        classId: parseInt(data.classId),
-        day: data.day, // Ensure data.day is provided
-        startTime: data.startTime, // Ensure data.startTime is provided
-        endTime: data.endTime, // Ensure data.endTime is provided
+        name,
+        day,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        subjectId: typeof subjectId === 'string' ? parseInt(subjectId) : subjectId,
+        teacherId,
+        classId: typeof classId === 'string' ? parseInt(classId) : classId,
       },
     });
 
-    return { success: true, error: false, message: "" };
+    revalidatePath("/list/lessons");
+    return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+    logError('Error creating lesson:', err);
+    return { success: false, error: true, message: 'Failed to create lesson' };
   }
 };
 
 export const updateLesson = async (
   currentState: CurrentState,
-  data: any
+  data: LessonSchema
 ) => {
   try {
+    const { id, name, day, startTime, endTime, subjectId, teacherId, classId } = data;
+
     await prisma.lesson.update({
       where: {
-        id: data.id,
+        id: id as number,
       },
       data: {
-        name: data.name,
-        subjectId: parseInt(data.subjectId),
-        teacherId: data.teacherId,
-        classId: parseInt(data.classId),
+        name,
+        day,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        subjectId: typeof subjectId === 'string' ? parseInt(subjectId) : subjectId,
+        teacherId,
+        classId: typeof classId === 'string' ? parseInt(classId) : classId,
       },
     });
 
-    return { success: true, error: false, message: "" };
+    revalidatePath("/list/lessons");
+    return { success: true, error: false, message: 'Success' };
   } catch (err) {
-    console.log(err);
-    return { success: false, error: true };
+    logError('Error updating lesson:', err);
+    return { success: false, error: true, message: 'Failed to update lesson' };
   }
 };
 
@@ -1164,27 +1185,18 @@ export const deleteAssignment = async (
 
 export const createResult = async (
   currentState: CurrentState,
-  data: FormData
+  data: ResultSchema
 ) => {
   try {
-    const studentId = data.get("studentId") as string;
-    const assessmentType = data.get("assessmentType") as string;
-    const assessmentId = parseInt(data.get("assessmentId") as string);
-    const score = parseInt(data.get("score") as string);
-
-    const resultData: any = {
-      studentId,
-      score,
-    };
-
-    if (assessmentType === "exam") {
-      resultData.examId = assessmentId;
-    } else {
-      resultData.assignmentId = assessmentId;
-    }
+    const { studentId, score, examId, assignmentId } = data;
 
     await prisma.result.create({
-      data: resultData,
+      data: {
+        studentId,
+        score: typeof score === 'string' ? parseInt(score) : score,
+        examId: examId ? (typeof examId === 'string' ? parseInt(examId) : examId) : null,
+        assignmentId: assignmentId ? (typeof assignmentId === 'string' ? parseInt(assignmentId) : assignmentId) : null,
+      },
     });
 
     revalidatePath("/list/results");
@@ -1197,31 +1209,19 @@ export const createResult = async (
 
 export const updateResult = async (
   currentState: CurrentState,
-  data: FormData
+  data: ResultSchema
 ) => {
   try {
-    const id = parseInt(data.get("id") as string);
-    const studentId = data.get("studentId") as string;
-    const assessmentType = data.get("assessmentType") as string;
-    const assessmentId = parseInt(data.get("assessmentId") as string);
-    const score = parseInt(data.get("score") as string);
-
-    const resultData: any = {
-      studentId,
-      score,
-    };
-
-    if (assessmentType === "exam") {
-      resultData.examId = assessmentId;
-      resultData.assignmentId = null;
-    } else {
-      resultData.assignmentId = assessmentId;
-      resultData.examId = null;
-    }
+    const { id, studentId, score, examId, assignmentId } = data;
 
     await prisma.result.update({
-      where: { id },
-      data: resultData,
+      where: { id: id as number },
+      data: {
+        studentId,
+        score: typeof score === 'string' ? parseInt(score) : score,
+        examId: examId ? (typeof examId === 'string' ? parseInt(examId) : examId) : null,
+        assignmentId: assignmentId ? (typeof assignmentId === 'string' ? parseInt(assignmentId) : assignmentId) : null,
+      },
     });
 
     revalidatePath("/list/results");
@@ -1254,20 +1254,17 @@ export const deleteResult = async (
 
 export const createAttendance = async (
   currentState: CurrentState,
-  data: FormData
+  data: AttendanceSchema
 ) => {
   try {
-    const studentId = data.get("studentId") as string;
-    const lessonId = parseInt(data.get("lessonId") as string);
-    const date = new Date(data.get("date") as string);
-    const present = data.get("present") === "true";
+    const { studentId, lessonId, date, present } = data;
 
     await prisma.attendance.create({
       data: {
         studentId,
-        lessonId,
-        date,
-        present,
+        lessonId: lessonId as number,
+        date: new Date(date),
+        present: Boolean(present),
       },
     });
 
@@ -1282,22 +1279,18 @@ export const createAttendance = async (
 
 export const updateAttendance = async (
   currentState: CurrentState,
-  data: FormData
+  data: AttendanceSchema
 ) => {
   try {
-    const id = parseInt(data.get("id") as string);
-    const studentId = data.get("studentId") as string;
-    const lessonId = parseInt(data.get("lessonId") as string);
-    const date = new Date(data.get("date") as string);
-    const present = data.get("present") === "true";
+    const { id, studentId, lessonId, date, present } = data;
 
     await prisma.attendance.update({
-      where: { id },
+      where: { id: id as number },
       data: {
         studentId,
-        lessonId,
-        date,
-        present,
+        lessonId: lessonId as number,
+        date: new Date(date),
+        present: Boolean(present),
       },
     });
 
@@ -1333,38 +1326,28 @@ export const deleteAttendance = async (
 
 export const createEvent = async (
   currentState: CurrentState,
-  data: FormData
+  data: EventSchema
 ) => {
   try {
-    const title = data.get("title") as string;
-    const description = data.get("description") as string;
-    const startTime = new Date(data.get("startTime") as string);
-    const endTime = new Date(data.get("endTime") as string);
-    const classId = data.get("classId") as string;
+    const { title, description, startTime, endTime, classId } = data;
 
     // Validation
     if (!title || !startTime || !endTime) {
       return { success: false, error: true, message: 'Title, start time, and end time are required' };
     }
 
-    if (startTime >= endTime) {
+    if (new Date(startTime) >= new Date(endTime)) {
       return { success: false, error: true, message: 'End time must be after start time' };
     }
 
-    const eventData: any = {
-      title,
-      description: description || null,
-      startTime,
-      endTime,
-    };
-
-    // Only set classId if it's not empty
-    if (classId && classId.trim() !== "") {
-      eventData.classId = parseInt(classId);
-    }
-
     await prisma.event.create({
-      data: eventData,
+      data: {
+        title: title!,
+        description: description || "",
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        classId: classId ? (typeof classId === 'string' ? parseInt(classId) : classId as number) : null,
+      },
     });
 
     revalidatePath("/list/events");
@@ -1378,42 +1361,29 @@ export const createEvent = async (
 
 export const updateEvent = async (
   currentState: CurrentState,
-  data: FormData
+  data: EventSchema
 ) => {
   try {
-    const id = parseInt(data.get("id") as string);
-    const title = data.get("title") as string;
-    const description = data.get("description") as string;
-    const startTime = new Date(data.get("startTime") as string);
-    const endTime = new Date(data.get("endTime") as string);
-    const classId = data.get("classId") as string;
+    const { id, title, description, startTime, endTime, classId } = data;
 
     // Validation
     if (!title || !startTime || !endTime) {
       return { success: false, error: true, message: 'Title, start time, and end time are required' };
     }
 
-    if (startTime >= endTime) {
+    if (new Date(startTime) >= new Date(endTime)) {
       return { success: false, error: true, message: 'End time must be after start time' };
     }
 
-    const eventData: any = {
-      title,
-      description: description || null,
-      startTime,
-      endTime,
-    };
-
-    // Handle classId (null for school-wide, or specific class)
-    if (classId && classId.trim() !== "") {
-      eventData.classId = parseInt(classId);
-    } else {
-      eventData.classId = null;
-    }
-
     await prisma.event.update({
-      where: { id },
-      data: eventData,
+      where: { id: id as number },
+      data: {
+        title: title!,
+        description: description || "",
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        classId: classId ? (typeof classId === 'string' ? parseInt(classId) : classId as number) : null,
+      },
     });
 
     revalidatePath("/list/events");
@@ -1469,29 +1439,18 @@ export const deleteAnnouncement = async (
 
 export const createAnnouncement = async (
   currentState: CurrentState,
-  data: FormData
+  data: AnnouncementSchema
 ) => {
   try {
-    const title = data.get("title") as string;
-    const description = data.get("description") as string;
-    const date = new Date(data.get("date") as string);
-    const classId = data.get("classId") as string;
-
-    if (!title || !date) {
-      return { success: false, error: true, message: 'Title and date are required' };
-    }
-
-    const announcementData: any = {
-      title,
-      description: description || null,
-      date,
-    };
-    if (classId && classId.trim() !== "") {
-      announcementData.classId = parseInt(classId);
-    }
+    const { title, description, date, classId } = data;
 
     await prisma.announcement.create({
-      data: announcementData,
+      data: {
+        title: title!,
+        description: description || "",
+        date: new Date(date),
+        classId: classId ? (typeof classId === 'string' ? parseInt(classId) : classId as number) : null,
+      },
     });
 
     revalidatePath("/list/announcements");
@@ -1505,33 +1464,19 @@ export const createAnnouncement = async (
 
 export const updateAnnouncement = async (
   currentState: CurrentState,
-  data: FormData
+  data: AnnouncementSchema
 ) => {
   try {
-    const id = parseInt(data.get("id") as string);
-    const title = data.get("title") as string;
-    const description = data.get("description") as string;
-    const date = new Date(data.get("date") as string);
-    const classId = data.get("classId") as string;
-
-    if (!title || !date) {
-      return { success: false, error: true, message: 'Title and date are required' };
-    }
-
-    const announcementData: any = {
-      title,
-      description: description || null,
-      date,
-    };
-    if (classId && classId.trim() !== "") {
-      announcementData.classId = parseInt(classId);
-    } else {
-      announcementData.classId = null;
-    }
+    const { id, title, description, date, classId } = data;
 
     await prisma.announcement.update({
-      where: { id },
-      data: announcementData,
+      where: { id: id as number },
+      data: {
+        title: title!,
+        description: description || "",
+        date: new Date(date),
+        classId: classId ? (typeof classId === 'string' ? parseInt(classId) : classId as number) : null,
+      },
     });
 
     revalidatePath("/list/announcements");
@@ -1546,7 +1491,7 @@ export const updateAnnouncement = async (
 // Message Actions
 export const createMessage = async (
   currentState: CurrentState,
-  data: FormData
+  data: MessageSchema
 ) => {
   try {
     const supabase = createClient();
@@ -1558,14 +1503,7 @@ export const createMessage = async (
       return { success: false, error: true, message: 'Authentication required' };
     }
 
-    const title = data.get("title") as string;
-    const content = data.get("content") as string;
-    const category = data.get("category") as string;
-    const priority = data.get("priority") as string;
-    const recipientId = data.get("recipientId") as string;
-    const recipientRole = data.get("recipientRole") as string;
-    const parentId = data.get("parentId") as string;
-    const isBroadcast = data.get("isBroadcast") === "true";
+    const { title, content, category, priority, recipientId, recipientRole, parentId, isBroadcast } = data;
 
     if (!title || !content) {
       return { success: false, error: true, message: 'Title and content are required' };
@@ -1602,8 +1540,8 @@ export const createMessage = async (
       isBroadcast,
     };
 
-    if (parentId && parentId.trim() !== "") {
-      messageData.parentId = parseInt(parentId);
+    if (parentId && String(parentId).trim() !== "") {
+      messageData.parentId = typeof parentId === 'string' ? parseInt(parentId) : parentId as number;
     }
 
     if (!isBroadcast) {
@@ -1615,13 +1553,13 @@ export const createMessage = async (
       }
     }
 
-    await prisma.message.create({
+    const newMessage = await prisma.message.create({
       data: messageData,
     });
 
     revalidatePath("/list/messages");
     revalidatePath("/");
-    return { success: true, error: false, message: 'Success' };
+    return { success: true, error: false, message: 'Success', id: newMessage.id };
   } catch (err) {
     logError('Error creating message:', err);
     return { success: false, error: true, message: 'Failed to create message' };

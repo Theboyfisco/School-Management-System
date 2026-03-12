@@ -10,7 +10,7 @@ import { studentSchema, StudentSchema } from "@/lib/formValidationSchemas";
 import { createStudent, updateStudent } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { CldUploadWidget } from "next-cloudinary";
+import SafeCldUploadWidget from "../SafeCldUploadWidget";
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -171,12 +171,12 @@ const StudentForm = ({
           </div>
           <div className="text-center sm:text-left space-y-3">
             <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">
-                Profile Portrait
+                Profile Photo
             </h3>
             <p className="text-surface-500 dark:text-surface-400 text-sm max-w-xs leading-relaxed">
                 A clear, professional photo ensures easy identification in the student portal.
             </p>
-            <CldUploadWidget
+            <SafeCldUploadWidget
               uploadPreset="school"
               onOpen={() => setUploading(true)}
               onSuccess={(result, { widget }) => {
@@ -196,7 +196,7 @@ const StudentForm = ({
                   {img ? 'Update Photo' : 'Upload Image'}
                 </button>
               )}
-            </CldUploadWidget>
+            </SafeCldUploadWidget>
           </div>
         </div>
       </div>
@@ -211,7 +211,7 @@ const StudentForm = ({
             </h3>
             <div className="space-y-5">
               <InputField
-                label="Public Username"
+                label="Username"
                 name="username"
                 register={register}
                 error={errors?.username}
@@ -220,7 +220,7 @@ const StudentForm = ({
                 required
               />
               <InputField
-                label="Primary Email"
+                label="Email Address"
                 name="email"
                 type="email"
                 register={register}
@@ -251,7 +251,7 @@ const StudentForm = ({
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <InputField
-                label="Given Name"
+                label="First Name"
                 name="name"
                 register={register}
                 error={errors?.name}
@@ -299,7 +299,7 @@ const StudentForm = ({
             </h3>
             <div className="space-y-5">
               <InputField
-                label="Contact Number"
+                label="Phone Number"
                 name="phone"
                 register={register}
                 error={errors?.phone}
@@ -317,7 +317,7 @@ const StudentForm = ({
                 required
               />
               <InputField
-                label="Home Address"
+                label="Residential Address"
                 name="address"
                 register={register}
                 error={errors?.address}
@@ -358,7 +358,7 @@ const StudentForm = ({
             </div>
             <div className="pt-2">
               <CustomDropdown
-                label="Guardian Connection"
+                label="Parent/Guardian"
                 name="parentId"
                 options={parentOptions}
                 value={watch("parentId")}

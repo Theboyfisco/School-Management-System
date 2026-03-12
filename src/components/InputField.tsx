@@ -21,9 +21,10 @@ interface InputFieldProps {
   success?: boolean;
   loading?: boolean;
   maxLength?: number;
+  rows?: number;
 }
 
-const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
+const InputField = forwardRef<any, InputFieldProps>(({
   label,
   name,
   type = "text",
@@ -41,6 +42,7 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
   success = false,
   loading = false,
   maxLength,
+  rows = 4,
   ...props
 }, ref) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -80,36 +82,66 @@ const InputField = forwardRef<HTMLInputElement, InputFieldProps>(({
         )}
 
         {/* Input Field with premium styling */}
-        <input
-          ref={ref}
-          id={name}
-          type={inputType}
-          defaultValue={defaultValue}
-          placeholder={placeholder}
-          required={required}
-          disabled={disabled}
-          autoComplete={autoComplete}
-          maxLength={maxLength}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          {...register(name)}
-          {...props}
-          className={`
-            w-full px-4 py-3.5 bg-surface-50 dark:bg-surface-800/50 border rounded-2xl
-            text-surface-900 dark:text-white placeholder:text-surface-400/60
-            transition-all duration-300 outline-none
-            ${icon ? 'pl-11' : ''}
-            ${isPassword ? 'pr-11' : ''}
-            ${error 
-              ? 'border-danger-300 dark:border-danger-500/30 ring-4 ring-danger-500/5 dark:ring-danger-500/10' 
-              : isFocused
-                ? 'border-primary-500/50 ring-4 ring-primary-500/10 dark:ring-primary-500/20 bg-white dark:bg-surface-800 shadow-lg shadow-primary-500/5'
-                : 'border-surface-200 dark:border-surface-700/50 hover:border-surface-300 dark:hover:border-surface-600/50'
-            }
-            ${disabled ? 'opacity-50 cursor-not-allowed bg-surface-100 dark:bg-surface-900' : ''}
-            text-sm font-medium
-          `}
-        />
+        {type === "textarea" ? (
+          <textarea
+            ref={ref}
+            id={name}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            required={required}
+            disabled={disabled}
+            rows={rows}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...register(name)}
+            {...props}
+            className={`
+              w-full px-4 py-3.5 bg-surface-50 dark:bg-surface-800/50 border rounded-2xl
+              text-surface-900 dark:text-white placeholder:text-surface-400/60
+              transition-all duration-300 outline-none resize-none
+              ${icon ? 'pl-11' : ''}
+              ${error 
+                ? 'border-danger-300 dark:border-danger-500/30 ring-4 ring-danger-500/5 dark:ring-danger-500/10' 
+                : isFocused
+                  ? 'border-primary-500/50 ring-4 ring-primary-500/10 dark:ring-primary-500/20 bg-white dark:bg-surface-800 shadow-lg shadow-primary-500/5'
+                  : 'border-surface-200 dark:border-surface-700/50 hover:border-surface-300 dark:hover:border-surface-600/50'
+              }
+              ${disabled ? 'opacity-50 cursor-not-allowed bg-surface-100 dark:bg-surface-900' : ''}
+              text-sm font-medium
+            `}
+          />
+        ) : (
+          <input
+            ref={ref}
+            id={name}
+            type={inputType}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            required={required}
+            disabled={disabled}
+            autoComplete={autoComplete}
+            maxLength={maxLength}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            {...register(name)}
+            {...props}
+            className={`
+              w-full px-4 py-3.5 bg-surface-50 dark:bg-surface-800/50 border rounded-2xl
+              text-surface-900 dark:text-white placeholder:text-surface-400/60
+              transition-all duration-300 outline-none
+              ${icon ? 'pl-11' : ''}
+              ${isPassword ? 'pr-11' : ''}
+              ${error 
+                ? 'border-danger-300 dark:border-danger-500/30 ring-4 ring-danger-500/5 dark:ring-danger-500/10' 
+                : isFocused
+                  ? 'border-primary-500/50 ring-4 ring-primary-500/10 dark:ring-primary-500/20 bg-white dark:bg-surface-800 shadow-lg shadow-primary-500/5'
+                  : 'border-surface-200 dark:border-surface-700/50 hover:border-surface-300 dark:hover:border-surface-600/50'
+              }
+              ${disabled ? 'opacity-50 cursor-not-allowed bg-surface-100 dark:bg-surface-900' : ''}
+              text-sm font-medium
+            `}
+          />
+        )}
 
         {/* Right Icons Container */}
         <div className="absolute inset-y-0 right-0 pr-4 flex items-center gap-2">

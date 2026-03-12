@@ -10,7 +10,7 @@ import { teacherSchema, TeacherSchema } from "@/lib/formValidationSchemas";
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { CldUploadWidget } from "next-cloudinary";
+import SafeCldUploadWidget from "../SafeCldUploadWidget";
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -161,12 +161,12 @@ const TeacherForm = ({
           </div>
           <div className="text-center sm:text-left space-y-3">
             <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">
-                Profile Identification
+                Profile Photo
             </h3>
             <p className="text-surface-500 dark:text-surface-400 text-sm max-w-xs leading-relaxed">
                 Add a professional photo to help identify this faculty member across the system.
             </p>
-            <CldUploadWidget
+            <SafeCldUploadWidget
               uploadPreset="school"
               onOpen={() => setUploading(true)}
               onSuccess={(result, { widget }) => {
@@ -186,7 +186,7 @@ const TeacherForm = ({
                   {img ? 'Change Photo' : 'Upload Image'}
                 </button>
               )}
-            </CldUploadWidget>
+            </SafeCldUploadWidget>
           </div>
         </div>
       </div>
@@ -236,7 +236,7 @@ const TeacherForm = ({
           <div className="space-y-6">
             <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <UserIcon className="w-4 h-4" />
-              Core Identity
+              Teacher Profile
             </h3>
             <div className="grid grid-cols-2 gap-4">
                 <InputField
@@ -267,7 +267,7 @@ const TeacherForm = ({
                     required
                 />
                 <CustomDropdown
-                    label="Blood group"
+                    label="Blood Group"
                     name="bloodType"
                     options={bloodTypes}
                     value={watch("bloodType")}
@@ -288,7 +288,7 @@ const TeacherForm = ({
             </h3>
             <div className="space-y-4">
                 <InputField
-                    label="Phone Connection"
+                    label="Phone Number"
                     name="phone"
                     register={register}
                     error={errors.phone}
@@ -320,7 +320,7 @@ const TeacherForm = ({
           <div className="space-y-6">
             <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <AcademicCapIcon className="w-4 h-4" />
-              Teaching assignments
+              Teaching Assignments
             </h3>
             <CustomDropdown
                 label="Departmental Subjects"

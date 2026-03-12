@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
+import BaseForm from "./BaseForm";
+import InputField from "../InputField";
+import CustomDropdown from "../CustomDropdown";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { eventSchema, EventSchema } from "@/lib/formValidationSchemas";
+import { 
+  CalendarIcon, 
+  DocumentTextIcon, 
+  BuildingOfficeIcon,
+  SparklesIcon,
+  CheckCircleIcon
+} from '@heroicons/react/24/outline';
 
 type EventFormProps = {
   type: "create" | "update";
@@ -15,128 +28,149 @@ type EventFormProps = {
 
 const EventForm = ({ type, data, setOpen, relatedData }: EventFormProps) => {
   const router = useRouter();
-  const [state, formAction] = useFormState(
-    type === "create" ? createEvent : updateEvent,
-    { success: false, error: false, message: "" }
-  );
-
-  useEffect(() => {
-    if (state.success) {
-      toast.success(`Event ${type === "create" ? "created" : "updated"} successfully!`);
-      setOpen(false);
-      router.refresh();
-    } else if (state.error) {
-      toast.error(state.message || `Failed to ${type} event`);
+  
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<EventSchema>({
+    resolver: zodResolver(eventSchema),
+    defaultValues: {
+      title: data?.title || '',
+      description: data?.description || '',
+      startTime: data?.startTime ? (new Date(data.startTime).toISOString().slice(0, 16) as any) : '',
+      endTime: data?.endTime ? (new Date(data.endTime).toISOString().slice(0, 16) as any) : '',
+      classId: data?.classId || undefined,
+      id: data?.id || undefined,
     }
-  }, [state, router, type, setOpen]);
+  });
+
+  const onSubmit = handleSubmit(async (formData) => {
+    const loadingToast = toast.loading(`${type === "create" ? "Creating" : "Updating"} event...`);
+    try {
+      const result = await (type === 'create' 
+        ? createEvent({ success: false, error: false }, formData)
+        : updateEvent({ success: false, error: false }, formData)
+      );
+
+      if (result?.success) {
+        toast.update(loadingToast, {
+          render: `Event ${type === "create" ? "created" : "updated"} successfully!`,
+          type: "success",
+          isLoading: false,
+          autoClose: 3000,
+          icon: <CheckCircleIcon className="w-5 h-5 text-success-500" />
+        });
+        setOpen(false);
+        router.refresh();
+      } else {
+        toast.update(loadingToast, {
+          render: result?.message || "Operation failed",
+          type: "error",
+          isLoading: false,
+          autoClose: 5000
+        });
+      }
+    } catch (error) {
+       toast.update(loadingToast, {
+        render: "A system error occurred",
+        type: "error",
+        isLoading: false,
+        autoClose: 5000
+      });
+    }
+  });
+
+  const classOptions = (relatedData?.classes || []).map((cls: any) => ({
+    value: cls.id,
+    label: cls.name,
+    icon: <BuildingOfficeIcon className="w-4 h-4" />
+  }));
+
+  const selectedClassId = watch("classId");
 
   return (
-    <form action={formAction} className="p-6 space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-        {type === "create" ? "Create New Event" : "Update Event"}
-      </h2>
-      
-      {type === "update" && (
-        <input type="hidden" name="id" value={data?.id} />
-      )}
-
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Event Title *
-        </label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          defaultValue={data?.title || ""}
-          required
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-          placeholder="Enter event title"
-        />
+    <BaseForm
+      title={type === "create" ? "Create New Event" : "Edit Event Details"}
+      subtitle={type === "create" ? "Schedule a new school-wide or class-specific event" : "Modify event timing, description or target group"}
+      onSubmit={onSubmit}
+      onCancel={() => setOpen(false)}
+      submitLabel={type === "create" ? "Create Event" : "Save Changes"}
+      isSubmitting={isSubmitting}
+    >
+      {/* Hero Accent */}
+      <div className="bg-gradient-to-br from-primary-50 to-indigo-50 dark:from-primary-500/10 dark:to-indigo-500/10 rounded-[2rem] p-8 border border-white dark:border-surface-800 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+              <CalendarIcon className="w-24 h-24" />
+          </div>
+          <div className="relative z-10 flex items-center gap-6">
+              <div className="w-16 h-16 rounded-2xl bg-white dark:bg-surface-800 shadow-xl flex items-center justify-center text-primary-500 ring-1 ring-surface-100 dark:ring-surface-700">
+                  <SparklesIcon className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Event Coordination</h3>
+                  <p className="text-surface-500 dark:text-surface-400 text-sm font-medium">Plan and communicate important school dates.</p>
+              </div>
+          </div>
       </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          defaultValue={data?.description || ""}
-          rows={4}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-          placeholder="Enter event description (optional)"
-        />
-      </div>
+      <div className="grid grid-cols-1 gap-10 pt-4">
+        <div className="space-y-8">
+            <InputField
+                label="Event Title"
+                name="title"
+                register={register}
+                error={errors?.title}
+                placeholder="e.g. Annual Sports Meet"
+                icon={<CalendarIcon className="w-4 h-4" />}
+                required
+            />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Start Date & Time *
-          </label>
-          <input
-            type="datetime-local"
-            id="startTime"
-            name="startTime"
-            defaultValue={data?.startTime ? new Date(data.startTime).toISOString().slice(0, 16) : ""}
-            required
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-          />
+            <div className="space-y-2">
+                <label className="text-[13px] font-bold uppercase tracking-wider text-surface-500 dark:text-surface-400">
+                    Description
+                </label>
+                <textarea
+                    {...register("description")}
+                    rows={4}
+                    className="w-full px-4 py-3 bg-surface-50 dark:bg-surface-800/50 border border-surface-200 dark:border-surface-700 rounded-2xl text-surface-900 dark:text-white placeholder:text-surface-400/60 focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500/50 outline-none transition-all resize-none"
+                    placeholder="Provide event details..."
+                />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InputField
+                    label="Start Date & Time"
+                    name="startTime"
+                    type="datetime-local"
+                    register={register}
+                    error={errors?.startTime}
+                    required
+                />
+                <InputField
+                    label="End Date & Time"
+                    name="endTime"
+                    type="datetime-local"
+                    register={register}
+                    error={errors?.endTime}
+                    required
+                />
+            </div>
+
+            <CustomDropdown
+                label="Scope / Target Class"
+                name="classId"
+                options={classOptions}
+                value={selectedClassId || undefined}
+                onChange={(val) => setValue("classId", val as any)}
+                placeholder="All School (Default)"
+                helperText="Leave empty for school-wide events"
+            />
         </div>
-
-        <div>
-          <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            End Date & Time *
-          </label>
-          <input
-            type="datetime-local"
-            id="endTime"
-            name="endTime"
-            defaultValue={data?.endTime ? new Date(data.endTime).toISOString().slice(0, 16) : ""}
-            required
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-          />
-        </div>
       </div>
-
-      <div>
-        <label htmlFor="classId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Target Class
-        </label>
-        <select
-          id="classId"
-          name="classId"
-          defaultValue={data?.classId || ""}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-lamaSky focus:border-lamaSky dark:bg-gray-700 dark:text-white"
-        >
-          <option value="">School-wide Event</option>
-          {relatedData?.classes?.map((classItem: any) => (
-            <option key={classItem.id} value={classItem.id}>
-              {classItem.name}
-            </option>
-          ))}
-        </select>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Leave empty for school-wide events, or select a specific class
-        </p>
-      </div>
-
-      <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lamaSky"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm font-medium text-white bg-lamaSky border border-transparent rounded-md hover:bg-lamaSky/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lamaSky"
-        >
-          {type === "create" ? "Create Event" : "Update Event"}
-        </button>
-      </div>
-    </form>
+    </BaseForm>
   );
 };
 

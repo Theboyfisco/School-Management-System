@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, forwardRef } from 'react';
 import { ChevronDownIcon, MagnifyingGlassIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 interface Option {
-  value: string | number;
+  value: string | number | boolean;
   label: string;
   disabled?: boolean;
   icon?: React.ReactNode;
@@ -14,8 +14,8 @@ interface CustomDropdownProps {
   label: string;
   name: string;
   options: Option[];
-  value?: string | number | (string | number)[];
-  onChange: (value: string | number | (string | number)[]) => void;
+  value?: string | number | boolean | (string | number | boolean)[];
+  onChange: (value: string | number | boolean | (string | number | boolean)[]) => void;
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
@@ -60,7 +60,7 @@ const CustomDropdown = forwardRef<HTMLDivElement, CustomDropdownProps>(({
   );
 
   const selectedOptions = multiSelect && Array.isArray(value) 
-    ? options.filter(option => (value as (string | number)[]).includes(option.value))
+    ? options.filter(option => (value as (string | number | boolean)[]).includes(option.value))
     : options.filter(option => option.value === value);
 
   useEffect(() => {
@@ -85,7 +85,7 @@ const CustomDropdown = forwardRef<HTMLDivElement, CustomDropdownProps>(({
     if (option.disabled) return;
 
     if (multiSelect) {
-      const currentValues = (Array.isArray(value) ? value : []) as (string | number)[];
+      const currentValues = (Array.isArray(value) ? value : []) as (string | number | boolean)[];
       const newValues = currentValues.includes(option.value)
         ? currentValues.filter(v => v !== option.value)
         : [...currentValues, option.value];
@@ -188,7 +188,7 @@ const CustomDropdown = forwardRef<HTMLDivElement, CustomDropdownProps>(({
                     
                   return (
                     <button
-                      key={option.value}
+                      key={String(option.value)}
                       type="button"
                       onClick={() => handleOptionSelect(option)}
                       className={`

@@ -185,7 +185,7 @@ const menuItems = [
 const Menu = async () => {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const role = user?.user_metadata?.role as string;
+  const role = user?.user_metadata?.role?.toLowerCase() as string;
 
   return (
     <nav className="h-full flex flex-col px-3 py-4">

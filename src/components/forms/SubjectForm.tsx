@@ -108,7 +108,7 @@ const SubjectForm = ({ type, data, setOpen, relatedData }: SubjectFormProps) => 
                   <SparklesIcon className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                  <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Curriculum Design</h3>
+                  <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Subject Details</h3>
                   <p className="text-surface-500 dark:text-surface-400 text-sm font-medium">Define core subject identity and teaching assignments.</p>
               </div>
           </div>

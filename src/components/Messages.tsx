@@ -3,8 +3,8 @@
 import useSWR from "swr";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import React from "react";
+import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline";
 
 type Message = {
   id: number;
@@ -150,14 +150,9 @@ const Messages = ({ externalRefresh }: { externalRefresh?: boolean }) => {
         <button
           onClick={() => router.push("/list/messages")}
           className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          aria-label="View all messages"
         >
-          <Image
-            src="/message.png"
-            alt="more"
-            width={16}
-            height={16}
-            className="dark:invert"
-          />
+          <EllipsisHorizontalIcon className="w-5 h-5 text-gray-400" />
         </button>
       </div>
       

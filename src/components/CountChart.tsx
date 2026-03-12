@@ -21,6 +21,12 @@ const colorMap: { [key: string]: string } = {
   'bg-yellow-500': '#EAB308',
   'bg-pink-500': '#EC4899',
   'bg-indigo-500': '#6366F1',
+  'bg-primary-500': '#6366F1',
+  'bg-accent-500': '#7C3AED',
+  'bg-success-500': '#10B981',
+  'bg-warning-500': '#F59E0B',
+  'bg-danger-500': '#EF4444',
+  'bg-warning-400': '#FBBF24',
 };
 
 // Custom Legend component for right-side display

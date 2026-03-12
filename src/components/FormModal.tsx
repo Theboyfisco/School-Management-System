@@ -244,6 +244,7 @@ const FormModal = ({
   data,
   id,
   relatedData,
+  children,
 }: FormContainerProps & { relatedData?: any }) => {
   const [open, setOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -344,21 +345,27 @@ const FormModal = ({
 
   return (
     <>
-      <button
-        className={`
-          btn btn-icon group relative
-          ${type === 'create' ? 'btn-primary w-11 h-11' : 'btn-secondary w-9 h-9'}
-        `}
-        onClick={() => setOpen(true)}
-      >
-        {type === 'create' ? <PlusIcon className="w-5 h-5" /> : 
-         type === 'update' ? <PencilSquareIcon className="w-4 h-4" /> : 
-         <TrashIcon className="w-4 h-4" />}
-        
-        <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none font-bold">
-          {type.charAt(0).toUpperCase() + type.slice(1)} {table}
-        </span>
-      </button>
+      {children ? (
+        <div onClick={() => setOpen(true)} className="cursor-pointer">
+          {children}
+        </div>
+      ) : (
+        <button
+          className={`
+            btn btn-icon group relative
+            ${type === 'create' ? 'btn-primary w-11 h-11' : 'btn-secondary w-9 h-9'}
+          `}
+          onClick={() => setOpen(true)}
+        >
+          {type === 'create' ? <PlusIcon className="w-5 h-5" /> : 
+           type === 'update' ? <PencilSquareIcon className="w-4 h-4" /> : 
+           <TrashIcon className="w-4 h-4" />}
+          
+          <span className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none font-bold">
+            {type.charAt(0).toUpperCase() + type.slice(1)} {table}
+          </span>
+        </button>
+      )}
 
       {open && (
         <div 
