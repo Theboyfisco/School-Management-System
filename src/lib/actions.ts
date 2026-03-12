@@ -60,7 +60,7 @@ export const createSubject = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError(err);
@@ -85,7 +85,7 @@ export const updateSubject = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError(err);
@@ -135,7 +135,7 @@ export const deleteSubject = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/subjects");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError('Error deleting subject:', err);
@@ -156,7 +156,7 @@ export const createClass = async (
       data,
     });
 
-    // revalidatePath("/list/class");
+    revalidatePath("/list/classes");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError(err);
@@ -176,7 +176,7 @@ export const updateClass = async (
       data,
     });
 
-    // revalidatePath("/list/class");
+    revalidatePath("/list/classes");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError(err);
@@ -196,7 +196,7 @@ export const deleteClass = async (
       },
     });
 
-    // revalidatePath("/list/class");
+    revalidatePath("/list/classes");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError(err);
@@ -428,7 +428,7 @@ export const updateTeacher = async (
         },
       },
     });
-    // revalidatePath("/list/teachers");
+    revalidatePath("/list/teachers");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
     logError(err);
@@ -492,7 +492,7 @@ export const deleteTeacher = async (
       // but in production we'd want to handle this sync issue
     }
 
-    // revalidatePath("/list/teachers");
+    revalidatePath("/list/teachers");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError('Error deleting teacher:', err);
@@ -657,7 +657,7 @@ export const updateStudent = async (
         parentId: data.parentId,
       },
     });
-    // revalidatePath("/list/students");
+    revalidatePath("/list/students");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
     logError(err);
@@ -688,7 +688,7 @@ export const deleteStudent = async (
     const supabase = createAdminClient();
     await supabase.auth.admin.deleteUser(id);
 
-    // revalidatePath("/list/students");
+    revalidatePath("/list/students");
     return { success: true, error: false, message: "" };
   } catch (err) {
     logError('Error deleting student:', err);
@@ -726,7 +726,7 @@ export const createExam = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/exams");
     return { success: true, error: false, message: "" };
   } catch (err) {
     console.log(err);
@@ -767,7 +767,7 @@ export const updateExam = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/exams");
     return { success: true, error: false, message: "" };
   } catch (err) {
     console.log(err);
@@ -792,7 +792,7 @@ export const deleteExam = async (
       },
     });
 
-    // revalidatePath("/list/subjects");
+    revalidatePath("/list/exams");
     return { success: true, error: false, message: "" };
   } catch (err) {
     console.log(err);
@@ -869,6 +869,7 @@ export const deleteLesson = async (
       },
     });
 
+    revalidatePath("/list/lessons");
     return { success: true, error: false, message: "" };
   } catch (err) {
     console.log(err);
@@ -1032,7 +1033,7 @@ export const createParent = async (
       }
     });
 
-    // revalidatePath("/list/parents");
+    revalidatePath("/list/parents");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
     logError('Error creating parent:', err);
@@ -1109,7 +1110,7 @@ export const updateParent = async (
       },
     });
 
-    // revalidatePath("/list/parents");
+    revalidatePath("/list/parents");
     return { success: true, error: false, message: "" };
   } catch (err: any) {
     logError('Error updating parent:', err);
