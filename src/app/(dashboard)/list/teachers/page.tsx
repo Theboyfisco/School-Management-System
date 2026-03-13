@@ -3,7 +3,9 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableRow from "@/components/TableRow";
 import TableSearch from "@/components/TableSearch";
+import BulkSelectableTable from "@/components/BulkSelectableTable";
 import prisma from "@/lib/prisma";
+import { bulkDeleteTeachers } from "@/lib/actions";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
@@ -212,121 +214,156 @@ const TeacherListPage = async ({
         </div>
       </div>
 
-      {/* Main Table */}
-      <Table 
-        columns={columns}
-        emptyMessage="No teachers found matching your search criteria."
+      {/* Main Table with Bulk Selection */}
+      <BulkSelectableTable
+        allIds={data.map(item => item.id)}
+        tableName="teacher"
+        deleteAction={bulkDeleteTeachers}
       >
-        {data.map((item, index) => (
-          <TableRow key={item.id} index={index}>
-            <td className="px-6 py-4">
-              <div className="flex gap-4 items-center">
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity" />
-                  <Image
-                    src={item.img || "/noAvatar.png"}
-                    alt=""
-                    width={44}
-                    height={44}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-surface-50 dark:ring-surface-800"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-surface-900 dark:text-white font-display">
-                    {item.name} {item.surname}
-                  </h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${item.sex === 'MALE' ? 'bg-blue-500' : 'bg-pink-500'}`} />
-                    <span className="text-[11px] font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
-                      {item.sex}
+        {({ selectedIds, toggleSelection, isSelected, selectAll, allSelected, isDeleting }) => (
+          <Table 
+            columns={[
+              ...(role === "admin" ? [{
+                header: "",
+                accessor: "select",
+                className: "w-12",
+              }] : []),
+              ...columns
+            ]}
+            loading={false}
+            emptyMessage="No teachers found matching your search criteria."
+          >
+            {data.map((item, index) => (
+              <TableRow key={item.id} index={index} isPending={isDeleting && isSelected(item.id)}>
+                {role === "admin" && (
+                  <td className="px-3 py-4 text-center">
+                    <label className="relative flex items-center justify-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected(item.id)}
+                        onChange={() => toggleSelection(item.id)}
+                        className="peer sr-only"
+                      />
+                      <div className="w-5 h-5 rounded-md border-2 border-surface-300 dark:border-surface-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-all duration-200 flex items-center justify-center">
+                        {isSelected(item.id) && (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
+                  </td>
+                )}
+                <td className="px-6 py-4">
+                  <div className="flex gap-4 items-center">
+                    <div className="relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity" />
+                      <Image
+                        src={item.img || "/noAvatar.png"}
+                        alt=""
+                        width={44}
+                        height={44}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-surface-50 dark:ring-surface-800"
+                      />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-surface-900 dark:text-white font-display">
+                        {item.name} {item.surname}
+                      </h3>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.sex === 'MALE' ? 'bg-blue-500' : 'bg-pink-500'}`} />
+                        <span className="text-[11px] font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">
+                          {item.sex}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                
+                <td className="hidden md:table-cell px-6 py-4">
+                  <span className="text-sm font-mono text-surface-600 dark:text-surface-400 bg-surface-50 dark:bg-surface-800/50 px-2 py-1 rounded-md border border-surface-100 dark:border-surface-700/50">
+                    {item.username}
+                  </span>
+                </td>
+
+                <td className="hidden md:table-cell px-6 py-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.subjects.slice(0, 2).map((subject) => (
+                      <span key={subject.id} className="badge badge-accent">
+                        {subject.name}
+                      </span>
+                    ))}
+                    {item.subjects.length > 2 && (
+                      <span className="badge badge-secondary">+{item.subjects.length - 2}</span>
+                    )}
+                  </div>
+                </td>
+
+                <td className="hidden md:table-cell px-6 py-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.classes.slice(0, 2).map((cls) => (
+                      <span key={cls.id} className="badge badge-primary">
+                        {cls.name}
+                      </span>
+                    ))}
+                    {item.classes.length > 2 && (
+                      <span className="badge badge-secondary">+{item.classes.length - 2}</span>
+                    )}
+                  </div>
+                </td>
+
+                <td className="hidden lg:table-cell px-6 py-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 group">
+                      <EnvelopeIcon className="w-3.5 h-3.5 text-surface-400 group-hover:text-primary-500 transition-colors" />
+                      <span className="text-[13px] text-surface-600 dark:text-surface-400 truncate max-w-[140px]">
+                        {item.email}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 group">
+                      <PhoneIcon className="w-3.5 h-3.5 text-surface-400 group-hover:text-primary-500 transition-colors" />
+                      <span className="text-[13px] text-surface-600 dark:text-surface-400">
+                        {item.phone || "—"}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+
+                <td className="hidden xl:table-cell px-6 py-4">
+                  <div className="flex items-start gap-2 max-w-[200px]">
+                    <MapPinIcon className="w-3.5 h-3.5 text-surface-400 mt-0.5 flex-shrink-0" />
+                    <span className="text-[13px] text-surface-600 dark:text-surface-400 line-clamp-2 leading-relaxed">
+                      {item.address}
                     </span>
                   </div>
-                </div>
-              </div>
-            </td>
-            
-            <td className="hidden md:table-cell px-6 py-4">
-              <span className="text-sm font-mono text-surface-600 dark:text-surface-400 bg-surface-50 dark:bg-surface-800/50 px-2 py-1 rounded-md border border-surface-100 dark:border-surface-700/50">
-                {item.username}
-              </span>
-            </td>
+                </td>
 
-            <td className="hidden md:table-cell px-6 py-4">
-              <div className="flex flex-wrap gap-1.5">
-                {item.subjects.slice(0, 2).map((subject) => (
-                  <span key={subject.id} className="badge badge-accent">
-                    {subject.name}
-                  </span>
-                ))}
-                {item.subjects.length > 2 && (
-                  <span className="badge badge-secondary">+{item.subjects.length - 2}</span>
+                {role === "admin" && (
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Link href={`/list/teachers/${item.id}`}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="View Details">
+                          <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
+                        </button>
+                      </Link>
+                      <FormContainer table="teacher" type="update" data={item}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Teacher">
+                          <PencilSquareIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
+                        </button>
+                      </FormContainer>
+                      <FormContainer table="teacher" type="delete" id={item.id}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="Delete Teacher">
+                          <TrashIcon className="w-4 h-4 text-surface-400 group-hover:text-danger-500" />
+                        </button>
+                      </FormContainer>
+                    </div>
+                  </td>
                 )}
-              </div>
-            </td>
-
-            <td className="hidden md:table-cell px-6 py-4">
-              <div className="flex flex-wrap gap-1.5">
-                {item.classes.slice(0, 2).map((cls) => (
-                  <span key={cls.id} className="badge badge-primary">
-                    {cls.name}
-                  </span>
-                ))}
-                {item.classes.length > 2 && (
-                  <span className="badge badge-secondary">+{item.classes.length - 2}</span>
-                )}
-              </div>
-            </td>
-
-            <td className="hidden lg:table-cell px-6 py-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 group">
-                  <EnvelopeIcon className="w-3.5 h-3.5 text-surface-400 group-hover:text-primary-500 transition-colors" />
-                  <span className="text-[13px] text-surface-600 dark:text-surface-400 truncate max-w-[140px]">
-                    {item.email}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 group">
-                  <PhoneIcon className="w-3.5 h-3.5 text-surface-400 group-hover:text-primary-500 transition-colors" />
-                  <span className="text-[13px] text-surface-600 dark:text-surface-400">
-                    {item.phone || "—"}
-                  </span>
-                </div>
-              </div>
-            </td>
-
-            <td className="hidden xl:table-cell px-6 py-4">
-              <div className="flex items-start gap-2 max-w-[200px]">
-                <MapPinIcon className="w-3.5 h-3.5 text-surface-400 mt-0.5 flex-shrink-0" />
-                <span className="text-[13px] text-surface-600 dark:text-surface-400 line-clamp-2 leading-relaxed">
-                  {item.address}
-                </span>
-              </div>
-            </td>
-
-            {role === "admin" && (
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-1.5 justify-end">
-                  <Link href={`/list/teachers/${item.id}`}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="View Details">
-                      <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
-                    </button>
-                  </Link>
-                  <FormContainer table="teacher" type="update" data={item}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Teacher">
-                      <PencilSquareIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
-                    </button>
-                  </FormContainer>
-                  <FormContainer table="teacher" type="delete" id={item.id}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="Delete Teacher">
-                      <TrashIcon className="w-4 h-4 text-surface-400 group-hover:text-danger-500" />
-                    </button>
-                  </FormContainer>
-                </div>
-              </td>
-            )}
-          </TableRow>
-        ))}
-      </Table>
+              </TableRow>
+            ))}
+          </Table>
+        )}
+      </BulkSelectableTable>
 
       {/* Pagination */}
       <Pagination page={p} count={count} />

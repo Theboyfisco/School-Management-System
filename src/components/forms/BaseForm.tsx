@@ -16,6 +16,7 @@ interface BaseFormProps {
   success?: boolean;
   error?: any;
   className?: string;
+  customFooter?: ReactNode;
 }
 
 /**
@@ -35,7 +36,8 @@ const BaseForm = ({
   isSubmitting = false,
   success = false,
   error,
-  className = ""
+  className = "",
+  customFooter
 }: BaseFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -105,28 +107,32 @@ const BaseForm = ({
 
         {/* Sticky Actions Footer */}
         <div className="p-6 border-t border-surface-100 dark:border-surface-800 bg-surface-50/50 dark:bg-surface-800/30 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isSubmitting || isLoading}
-            className="btn btn-secondary px-8 py-3"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting || isLoading}
-            className="btn btn-primary px-10 py-3 gap-2 min-w-[160px]"
-          >
-            {isSubmitting || isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
-                <span>Processing...</span>
-              </>
-            ) : (
-              <span>{submitLabel}</span>
-            )}
-          </button>
+          {customFooter ? customFooter : (
+            <>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isSubmitting || isLoading}
+                className="btn btn-secondary px-8 py-3"
+              >
+                {cancelLabel}
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || isLoading}
+                className="btn btn-primary px-10 py-3 gap-2 min-w-[160px]"
+              >
+                {isSubmitting || isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <span>{submitLabel}</span>
+                )}
+              </button>
+            </>
+          )}
         </div>
       </form>
     </div>

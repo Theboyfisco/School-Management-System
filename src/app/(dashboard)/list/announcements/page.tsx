@@ -21,6 +21,8 @@ import {
   CalendarIcon,
   UserGroupIcon
 } from '@heroicons/react/24/outline';
+import BulkSelectableTable from "@/components/BulkSelectableTable";
+import { bulkDeleteAnnouncements } from "@/lib/actions";
 
 type AnnouncementList = Announcement & { class: Class };
 
@@ -216,89 +218,124 @@ const AnnouncementListPage = async ({
       </div>
 
       {/* Main Table */}
-      <Table 
-        columns={columns}
-        emptyMessage="No announcements found matching your criteria."
+      <BulkSelectableTable
+        allIds={data.map(item => item.id)}
+        tableName="announcement"
+        deleteAction={bulkDeleteAnnouncements}
       >
-        {data.map((item, index) => (
-          <TableRow key={item.id} index={index}>
-            <td className="px-6 py-4">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-11 h-11 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl shadow-glow shadow-primary-500/10 transition-transform hover:scale-105 text-white">
-                  <MegaphoneIcon className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-surface-900 dark:text-white font-display">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-surface-500 dark:text-surface-400 line-clamp-1 mt-0.5">
-                    {item.description || "No description provided"}
-                  </p>
-                </div>
-              </div>
-            </td>
+        {({ selectedIds, toggleSelection, isSelected, selectAll, allSelected, isDeleting }) => (
+          <Table 
+            columns={[
+              ...(role === "admin" ? [{
+                header: "",
+                accessor: "select",
+                className: "w-12",
+              }] : []),
+              ...columns
+            ]}
+            loading={false}
+            emptyMessage="No announcements found matching your criteria."
+          >
+            {data.map((item, index) => (
+              <TableRow key={item.id} index={index} isPending={isDeleting && isSelected(item.id)}>
+                {role === "admin" && (
+                  <td className="px-3 py-4 text-center">
+                    <label className="relative flex items-center justify-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected(item.id)}
+                        onChange={() => toggleSelection(item.id)}
+                        className="peer sr-only"
+                      />
+                      <div className="w-5 h-5 rounded-md border-2 border-surface-300 dark:border-surface-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-all duration-200 flex items-center justify-center">
+                        {isSelected(item.id) && (
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        )}
+                      </div>
+                    </label>
+                  </td>
+                )}
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-11 h-11 bg-gradient-to-br from-indigo-500 to-primary-600 rounded-xl shadow-glow shadow-primary-500/10 transition-transform hover:scale-105 text-white">
+                      <MegaphoneIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-surface-900 dark:text-white font-display">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-surface-500 dark:text-surface-400 line-clamp-1 mt-0.5">
+                        {item.description || "No description provided"}
+                      </p>
+                    </div>
+                  </div>
+                </td>
 
-            <td className="hidden md:table-cell px-6 py-4">
-              {item.class ? (
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold text-surface-900 dark:text-white">
-                    {item.class.name}
-                  </span>
-                  <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest mt-0.5 px-1.5 py-0.5 bg-primary-50 dark:bg-primary-500/10 rounded w-fit">
-                    Targeted
-                  </span>
-                </div>
-              ) : (
-                <div className="flex flex-col italic">
-                  <span className="text-sm font-medium text-surface-400">
-                    N/A
-                  </span>
-                  <span className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mt-0.5">
-                    Global
-                  </span>
-                </div>
-              )}
-            </td>
+                <td className="hidden md:table-cell px-6 py-4">
+                  {item.class ? (
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-surface-900 dark:text-white">
+                        {item.class.name}
+                      </span>
+                      <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest mt-0.5 px-1.5 py-0.5 bg-primary-50 dark:bg-primary-500/10 rounded w-fit">
+                        Targeted
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col italic">
+                      <span className="text-sm font-medium text-surface-400">
+                        N/A
+                      </span>
+                      <span className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mt-0.5">
+                        Global
+                      </span>
+                    </div>
+                  )}
+                </td>
 
-            <td className="hidden lg:table-cell px-6 py-4">
-              <div className="flex items-center gap-2 text-surface-500 dark:text-surface-400">
-                <CalendarIcon className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                  {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-              </div>
-            </td>
+                <td className="hidden lg:table-cell px-6 py-4">
+                  <div className="flex items-center gap-2 text-surface-500 dark:text-surface-400">
+                    <CalendarIcon className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">
+                      {new Date(item.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                </td>
 
-            <td className="hidden xl:table-cell px-6 py-4">
-              <span className={`badge ${item.classId ? 'badge-primary' : 'badge-accent'}`}>
-                {item.classId ? 'Class' : 'School'}
-              </span>
-            </td>
+                <td className="hidden xl:table-cell px-6 py-4">
+                  <span className={`badge ${item.classId ? 'badge-primary' : 'badge-accent'}`}>
+                    {item.classId ? 'Class' : 'School'}
+                  </span>
+                </td>
 
-            {role === "admin" && (
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-1.5 justify-end">
-                  <Link href={`/list/announcements/${item.id}`}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="View Details">
-                      <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
-                    </button>
-                  </Link>
-                  <FormContainer table="announcement" type="update" data={item}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Announcement">
-                      <PencilIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
-                    </button>
-                  </FormContainer>
-                  <FormContainer table="announcement" type="delete" id={item.id}>
-                    <button className="btn btn-secondary btn-icon btn-sm group" title="Delete Announcement">
-                      <TrashIcon className="w-4 h-4 text-surface-400 group-hover:text-danger-500" />
-                    </button>
-                  </FormContainer>
-                </div>
-              </td>
-            )}
-          </TableRow>
-        ))}
-      </Table>
+                {role === "admin" && (
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      <Link href={`/list/announcements/${item.id}`}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="View Details">
+                          <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
+                        </button>
+                      </Link>
+                      <FormContainer table="announcement" type="update" data={item}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Announcement">
+                          <PencilIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
+                        </button>
+                      </FormContainer>
+                      <FormContainer table="announcement" type="delete" id={item.id}>
+                        <button className="btn btn-secondary btn-icon btn-sm group" title="Delete Announcement">
+                          <TrashIcon className="w-4 h-4 text-surface-400 group-hover:text-danger-500" />
+                        </button>
+                      </FormContainer>
+                    </div>
+                  </td>
+                )}
+              </TableRow>
+            ))}
+          </Table>
+        )}
+      </BulkSelectableTable>
 
       <Pagination page={p} count={count} />
     </div>

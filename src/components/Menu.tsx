@@ -1,8 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-
-const MenuLogoutButton = dynamic(() => import("./MenuLogoutButton"), { ssr: false });
+import MenuClient from "./MenuClient";
 
 const menuItems = [
   {
@@ -187,43 +184,12 @@ const Menu = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   const role = user?.user_metadata?.role?.toLowerCase() as string;
 
-  return (
-    <nav className="h-full flex flex-col px-3 py-4">
-      {menuItems.map((section) => {
-        const visibleItems = section.items.filter(item => item.visible.includes(role));
-        if (visibleItems.length === 0) return null;
+  const filteredSections = menuItems.map(section => ({
+    ...section,
+    items: section.items.filter(item => item.visible.includes(role))
+  })).filter(section => section.items.length > 0);
 
-        return (
-          <div key={section.title} className="mb-6">
-            <h3 className="hidden lg:block px-3 mb-2 text-[10px] font-semibold text-surface-400 dark:text-surface-500 uppercase tracking-[0.12em]">
-              {section.title}
-            </h3>
-            <div className="space-y-0.5">
-              {visibleItems.map((item) => {
-                if (item.label === "Logout") {
-                  return <MenuLogoutButton key={item.label} />;
-                }
-
-                return (
-                  <Link
-                    href={item.href}
-                    key={item.label}
-                    className="flex items-center gap-3 px-3 py-2.5 text-surface-500 dark:text-surface-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 rounded-xl transition-all duration-200 group"
-                    aria-label={item.label}
-                  >
-                    <span className="text-surface-400 dark:text-surface-500 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
-                      {item.icon}
-                    </span>
-                    <span className="hidden lg:block text-sm font-medium">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </nav>
-  );
+  return <MenuClient sections={filteredSections} />;
 };
 
 export default Menu;

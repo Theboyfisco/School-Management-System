@@ -11,6 +11,7 @@ import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import SafeCldUploadWidget from "../SafeCldUploadWidget";
+import FormStepper from "./FormStepper";
 import { 
   UserIcon, 
   EnvelopeIcon, 
@@ -22,7 +23,9 @@ import {
   HeartIcon,
   IdentificationIcon,
   KeyIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 
 const TeacherForm = ({
@@ -42,6 +45,7 @@ const TeacherForm = ({
     formState: { errors, isSubmitting },
     setValue,
     watch,
+    trigger,
   } = useForm<TeacherSchema>({
     resolver: zodResolver(teacherSchema),
     defaultValues: {
@@ -86,6 +90,30 @@ const TeacherForm = ({
     { value: "AB+", label: "AB+" },
     { value: "AB-", label: "AB-" },
   ];
+
+  const [currentStep, setCurrentStep] = useState<number>(0);
+
+  const steps = [
+    { label: "Account & Basics", icon: <UserIcon className="w-5 h-5" /> },
+    { label: "Contact Details", icon: <PhoneIcon className="w-5 h-5" /> },
+    { label: "Professional Info", icon: <AcademicCapIcon className="w-5 h-5" /> }
+  ];
+
+  const nextStep = async () => {
+    let fieldsToValidate: any[] = [];
+    if (currentStep === 0) {
+      fieldsToValidate = ['username', 'email', ...(type === 'create' ? ['password'] : []), 'name', 'surname', 'sex', 'bloodType'];
+    } else if (currentStep === 1) {
+      fieldsToValidate = ['phone', 'birthday', 'address'];
+    }
+
+    const isValid = await trigger(fieldsToValidate as any);
+    if (isValid) {
+      setCurrentStep((prev) => prev + 1);
+    }
+  };
+
+  const prevStep = () => setCurrentStep((prev) => prev - 1);
 
   const subjectOptions = (subjects || []).map((s: any) => ({
     value: String(s.id),
@@ -137,9 +165,68 @@ const TeacherForm = ({
       onCancel={() => setOpen(false)}
       submitLabel={type === "create" ? "Create Faculty member" : "Update Profile"}
       isSubmitting={isSubmitting}
+      customFooter={
+        <>
+          {currentStep > 0 && (
+            <button
+              type="button"
+              onClick={prevStep}
+              className="btn btn-secondary px-8 py-3 gap-2"
+              disabled={isSubmitting || uploading}
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </button>
+          )}
+          {currentStep === 0 && (
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="btn btn-secondary px-8 py-3"
+              disabled={isSubmitting || uploading}
+            >
+              Cancel
+            </button>
+          )}
+
+          {currentStep < steps.length - 1 ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              className="btn btn-primary px-8 py-3 gap-2 min-w-[140px]"
+            >
+              Next Step
+              <ArrowRightIcon className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting || uploading}
+              className="btn btn-primary px-10 py-3 gap-2 min-w-[160px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircleIcon className="w-5 h-5" />
+                  <span>{type === "create" ? "Complete Setup" : "Save Changes"}</span>
+                </>
+              )}
+            </button>
+          )}
+        </>
+      }
     >
-      {/* Profile Photo Section */}
-      <div className="bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-500/10 dark:to-accent-500/10 rounded-[2rem] p-8 border border-white dark:border-surface-800 shadow-sm">
+      <FormStepper steps={steps} currentStep={currentStep} />
+
+      {/* Step 1: Account & Basics */}
+      {currentStep === 0 && (
+        <div className="space-y-10 animate-fade-in">
+          {/* Profile Photo Section */}
+          <div className="bg-gradient-to-br from-primary-50 to-accent-50 dark:from-primary-500/10 dark:to-accent-500/10 rounded-[2rem] p-8 border border-white dark:border-surface-800 shadow-sm">
         <div className="flex flex-col sm:flex-row items-center gap-8">
           <div className="relative group">
             <div className="absolute -inset-2 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
@@ -188,8 +275,8 @@ const TeacherForm = ({
               )}
             </SafeCldUploadWidget>
           </div>
+          </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Left Column: Account & Basics */}
@@ -275,12 +362,16 @@ const TeacherForm = ({
                     placeholder="Type"
                     helperText="Optional medical info"
                 />
+              </div>
+              </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Right Column: Contact & Assignments */}
-        <div className="space-y-10">
+      {/* Step 2: Contact Details */}
+      {currentStep === 1 && (
+        <div className="space-y-10 animate-fade-in">
           <div className="space-y-6">
             <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <PhoneIcon className="w-4 h-4" />
@@ -316,7 +407,12 @@ const TeacherForm = ({
                 />
             </div>
           </div>
+        </div>
+      )}
 
+      {/* Step 3: Professional Info */}
+      {currentStep === 2 && (
+        <div className="space-y-10 animate-fade-in">
           <div className="space-y-6">
             <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
               <AcademicCapIcon className="w-4 h-4" />
@@ -336,7 +432,7 @@ const TeacherForm = ({
             />
           </div>
         </div>
-      </div>
+      )}
     </BaseForm>
   );
 };

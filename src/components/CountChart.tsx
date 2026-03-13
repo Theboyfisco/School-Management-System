@@ -2,12 +2,14 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type CountChartProps = {
   data: Array<{
     name: string;
     value: number;
     color: string;
+    href?: string;
   }>;
 };
 
@@ -30,7 +32,7 @@ const colorMap: { [key: string]: string } = {
 };
 
 // Custom Legend component for right-side display
-const CustomLegend = ({ payload, activeIndex, setActiveIndex }: { payload?: any[], activeIndex: number, setActiveIndex: (i: number) => void }) => {
+const CustomLegend = ({ payload, activeIndex, setActiveIndex, onItemClick }: { payload?: any[], activeIndex: number, setActiveIndex: (i: number) => void, onItemClick?: (href: string) => void }) => {
   if (!payload) return null;
   return (
     <div
@@ -44,13 +46,14 @@ const CustomLegend = ({ payload, activeIndex, setActiveIndex }: { payload?: any[
       {payload.map((entry, index) => (
         <button
           key={`legend-item-${index}`}
-          className={`flex items-center px-2 py-1 rounded transition-all duration-150 focus:outline-none whitespace-nowrap ${activeIndex === index ? 'bg-blue-50 dark:bg-blue-900/30 scale-105' : ''}`}
-          style={{ cursor: 'pointer' }}
+          className={`flex items-center px-2 py-1 rounded transition-all duration-150 focus:outline-none whitespace-nowrap ${activeIndex === index ? 'bg-blue-50 dark:bg-blue-900/30 scale-105' : ''} ${entry.href ? 'cursor-pointer hover:bg-primary-50 dark:hover:bg-primary-900/20' : ''}`}
+          style={{ cursor: entry.href ? 'pointer' : 'default' }}
           tabIndex={0}
           aria-label={`${entry.label}: ${entry.value} (${entry.percent}%)`}
           onMouseEnter={() => setActiveIndex(index)}
           onFocus={() => setActiveIndex(index)}
           onMouseLeave={() => setActiveIndex(-1)}
+          onClick={() => entry.href && onItemClick?.(entry.href)}
         >
           <span
             className="inline-block w-3 h-3 rounded-full mr-2 border"
@@ -68,10 +71,32 @@ const CustomLegend = ({ payload, activeIndex, setActiveIndex }: { payload?: any[
   );
 };
 
+// Custom Tooltip with premium styling
+const CustomTooltip = ({ active, payload }: any) => {
+  if (!active || !payload || !payload[0]) return null;
+  const data = payload[0].payload;
+  return (
+    <div className="bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-xl px-4 py-3 shadow-xl">
+      <p className="text-sm font-bold text-surface-900 dark:text-white">{data.name}</p>
+      <p className="text-lg font-bold mt-0.5" style={{ color: colorMap[data.color] || '#6B7280' }}>{data.value}</p>
+      {data.href && (
+        <p className="text-[10px] text-primary-500 mt-1 font-semibold uppercase tracking-wider">Click to view details</p>
+      )}
+    </div>
+  );
+};
+
 const CountChart = ({ data }: CountChartProps) => {
   const filteredData = data.filter(item => item.value > 0);
   const total = filteredData.reduce((sum, item) => sum + item.value, 0);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const router = useRouter();
+
+  const handleSegmentClick = (entry: any) => {
+    if (entry?.href) {
+      router.push(entry.href);
+    }
+  };
 
   if (filteredData.length === 0) {
     return (
@@ -86,12 +111,13 @@ const CountChart = ({ data }: CountChartProps) => {
 
   const COLORS = filteredData.map(item => colorMap[item.color] || '#6B7280');
 
-  // Legend payload with label, value, percent
+  // Legend payload with label, value, percent, and drill-down href
   const legendPayload = filteredData.map((item, i) => ({
     color: COLORS[i % COLORS.length],
     label: item.name,
     value: item.value,
     percent: ((item.value / total) * 100).toFixed(0),
+    href: item.href,
   }));
 
   return (
@@ -114,21 +140,14 @@ const CountChart = ({ data }: CountChartProps) => {
               activeIndex={activeIndex}
               onMouseEnter={(_, idx) => setActiveIndex(idx)}
               onMouseLeave={() => setActiveIndex(-1)}
+              onClick={(_, idx) => handleSegmentClick(filteredData[idx])}
+              style={{ cursor: 'pointer' }}
             >
               {filteredData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip 
-              formatter={(value: number, name: string) => [value, name]}
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '14px',
-                color: '#222',
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
         {/* Center total value */}
@@ -138,7 +157,12 @@ const CountChart = ({ data }: CountChartProps) => {
         </div>
       </div>
       <div className="flex-1 flex items-center justify-center w-full md:w-auto">
-        <CustomLegend payload={legendPayload} activeIndex={activeIndex} setActiveIndex={setActiveIndex} />
+        <CustomLegend 
+          payload={legendPayload} 
+          activeIndex={activeIndex} 
+          setActiveIndex={setActiveIndex}
+          onItemClick={(href) => router.push(href)}
+        />
       </div>
     </div>
   );

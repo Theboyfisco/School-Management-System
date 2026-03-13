@@ -8,6 +8,9 @@ import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
 
+import { Suspense } from "react";
+import { ChartSkeleton } from "@/components/Skeleton";
+
 const AdminPage = ({
   searchParams,
 }: {
@@ -50,11 +53,11 @@ const AdminPage = ({
               </div>
               <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
                 <CountChart data={[
-                  { name: 'Teachers', value: 10, color: 'bg-accent-500' },
-                  { name: 'Students', value: 50, color: 'bg-success-500' },
-                  { name: 'Classes', value: 6, color: 'bg-primary-500' },
-                  { name: 'Parents', value: 25, color: 'bg-warning-500' },
-                  { name: 'Events', value: 2, color: 'bg-danger-500' },
+                  { name: 'Teachers', value: 10, color: 'bg-accent-500', href: '/list/teachers' },
+                  { name: 'Students', value: 50, color: 'bg-success-500', href: '/list/students' },
+                  { name: 'Classes', value: 6, color: 'bg-primary-500', href: '/list/classes' },
+                  { name: 'Parents', value: 25, color: 'bg-warning-500', href: '/list/parents' },
+                  { name: 'Events', value: 2, color: 'bg-danger-500', href: '/list/events' },
                   { name: 'Ongoing', value: 1, color: 'bg-warning-400' },
                 ]} />
               </div>
@@ -65,10 +68,10 @@ const AdminPage = ({
                 <h3 className="section-header">Attendance Overview</h3>
                 <p className="section-subheader">Student attendance patterns</p>
               </div>
-              <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
-                <div className="h-72 w-full">
+              <div className="flex-1 p-4 min-h-[300px]">
+                <Suspense fallback={<ChartSkeleton />}>
                   <AttendanceChartContainer />
-                </div>
+                </Suspense>
               </div>
             </div>
           </div>
@@ -81,9 +84,9 @@ const AdminPage = ({
                 <p className="section-subheader">Revenue, expenses, and budget</p>
               </div>
               <div className="flex-1 p-4 min-h-[380px]">
-                <div className="h-96 w-full">
+                <Suspense fallback={<ChartSkeleton />}>
                   <FinanceChart />
-                </div>
+                </Suspense>
               </div>
             </div>
 
@@ -93,9 +96,9 @@ const AdminPage = ({
                 <p className="section-subheader">Academic events and schedules</p>
               </div>
               <div className="flex-1 p-4 min-h-[380px]">
-                <div className="h-96 w-full">
+                <Suspense fallback={<ChartSkeleton />}>
                   <BigCalendarContainer />
-                </div>
+                </Suspense>
               </div>
             </div>
           </div>

@@ -1704,3 +1704,87 @@ export const markMessageAsRead = async (
     return { success: false, error: true, message: 'Failed to mark message as read' };
   }
 };
+
+// ============================================================
+// Bulk Delete Actions
+// ============================================================
+
+export const bulkDeleteTeachers = async (ids: (string | number)[]): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can bulk delete" };
+
+    await prisma.teacher.deleteMany({ where: { id: { in: ids.map(String) } } });
+    revalidatePath("/list/teachers");
+    return { success: true, error: false, message: `Deleted ${ids.length} teacher(s)` };
+  } catch (err) {
+    logError("Bulk delete teachers error:", err);
+    return { success: false, error: true, message: "Failed to delete teachers" };
+  }
+};
+
+export const bulkDeleteStudents = async (ids: (string | number)[]): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can bulk delete" };
+
+    await prisma.student.deleteMany({ where: { id: { in: ids.map(String) } } });
+    revalidatePath("/list/students");
+    return { success: true, error: false, message: `Deleted ${ids.length} student(s)` };
+  } catch (err) {
+    logError("Bulk delete students error:", err);
+    return { success: false, error: true, message: "Failed to delete students" };
+  }
+};
+
+export const bulkDeleteSubjects = async (ids: (string | number)[]): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can bulk delete" };
+
+    await prisma.subject.deleteMany({ where: { id: { in: ids.map(Number) } } });
+    revalidatePath("/list/subjects");
+    return { success: true, error: false, message: `Deleted ${ids.length} subject(s)` };
+  } catch (err) {
+    logError("Bulk delete subjects error:", err);
+    return { success: false, error: true, message: "Failed to delete subjects" };
+  }
+};
+
+export const bulkDeleteAnnouncements = async (ids: (string | number)[]): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can bulk delete" };
+
+    await prisma.announcement.deleteMany({ where: { id: { in: ids.map(Number) } } });
+    revalidatePath("/list/announcements");
+    return { success: true, error: false, message: `Deleted ${ids.length} announcement(s)` };
+  } catch (err) {
+    logError("Bulk delete announcements error:", err);
+    return { success: false, error: true, message: "Failed to delete announcements" };
+  }
+};
+
+export const bulkDeleteEvents = async (ids: (string | number)[]): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can bulk delete" };
+
+    await prisma.event.deleteMany({ where: { id: { in: ids.map(Number) } } });
+    revalidatePath("/list/events");
+    return { success: true, error: false, message: `Deleted ${ids.length} event(s)` };
+  } catch (err) {
+    logError("Bulk delete events error:", err);
+    return { success: false, error: true, message: "Failed to delete events" };
+  }
+};

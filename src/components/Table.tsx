@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import { TableSkeleton } from './Skeleton';
 
 interface Column {
   header: string;
@@ -40,29 +40,8 @@ const Table = ({
 
   if (loading) {
     return (
-      <div className="card overflow-hidden">
-        <div className="animate-pulse">
-          {/* Header skeleton */}
-          <div className="bg-surface-50 dark:bg-surface-800/50 px-6 py-4 border-b border-surface-100 dark:border-surface-700/50">
-            <div className="flex gap-4">
-              {columns.map((_, index) => (
-                <div key={index} className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-20"></div>
-              ))}
-            </div>
-          </div>
-          {/* Row skeletons */}
-          {[...Array(5)].map((_, index) => (
-            <div key={index} className="px-6 py-4 border-b border-surface-50 dark:border-surface-700/50">
-              <div className="flex gap-4 items-center">
-                <div className="h-10 w-10 bg-surface-200 dark:bg-surface-700 rounded-full"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-surface-200 dark:bg-surface-700 rounded w-32"></div>
-                  <div className="h-3 bg-surface-200 dark:bg-surface-700 rounded w-24"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="card p-6">
+        <TableSkeleton rows={8} cols={columns.length} />
       </div>
     );
   }
