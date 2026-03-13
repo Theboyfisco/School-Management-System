@@ -51,38 +51,31 @@ const AttendanceChartContainer = async () => {
   }
   // Admin: all attendance (no additional filters)
 
-  const resData = await prisma.attendance.findMany({
+  const resData = await prisma.attendance.groupBy({
+    by: ['date', 'present'],
     where: attendanceQuery,
-    select: {
-      date: true,
-      present: true,
-    },
+    _count: true,
   });
 
-  // console.log(data)
-
   const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const attendanceMap: { [key: string]: { present: number; absent: number } } = {
+    Mon: { present: 0, absent: 0 },
+    Tue: { present: 0, absent: 0 },
+    Wed: { present: 0, absent: 0 },
+    Thu: { present: 0, absent: 0 },
+    Fri: { present: 0, absent: 0 },
+  };
 
-  const attendanceMap: { [key: string]: { present: number; absent: number } } =
-    {
-      Mon: { present: 0, absent: 0 },
-      Tue: { present: 0, absent: 0 },
-      Wed: { present: 0, absent: 0 },
-      Thu: { present: 0, absent: 0 },
-      Fri: { present: 0, absent: 0 },
-    };
-
-  resData.forEach((item: AttendanceData) => {
+  resData.forEach((item) => {
     const itemDate = new Date(item.date);
     const dayOfWeek = itemDate.getDay();
     
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
       const dayName = daysOfWeek[dayOfWeek - 1];
-
       if (item.present) {
-        attendanceMap[dayName].present += 1;
+        attendanceMap[dayName].present += item._count;
       } else {
-        attendanceMap[dayName].absent += 1;
+        attendanceMap[dayName].absent += item._count;
       }
     }
   });

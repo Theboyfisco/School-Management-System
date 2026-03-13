@@ -112,9 +112,25 @@ const ClassListPage = async ({
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
       where: query,
-      include: {
-        supervisor: true,
-        students: true,
+      select: {
+        id: true,
+        name: true,
+        capacity: true,
+        gradeId: true,
+        supervisor: {
+          select: {
+            id: true,
+            name: true,
+            surname: true,
+            img: true,
+          }
+        },
+        students: {
+          select: {
+            id: true,
+            img: true,
+          }
+        },
       },
       orderBy,
       take: ITEM_PER_PAGE,

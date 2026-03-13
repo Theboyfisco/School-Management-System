@@ -130,8 +130,18 @@ const AnnouncementListPage = async ({
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({
       where: query,
-      include: {
-        class: true,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        date: true,
+        classId: true,
+        class: {
+          select: {
+            id: true,
+            name: true,
+          }
+        },
       },
       orderBy,
       take: ITEM_PER_PAGE,
