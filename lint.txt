@@ -1,7 +1,0 @@
-
-C:\Users\ifean\Videos\New folder\School-UI-main\src\components\CommandBar.tsx
-  194:108  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
-  194:116  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
-
-Ô£û 2 problems (2 errors, 0 warnings)
-
