@@ -3,7 +3,7 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableRow from "@/components/TableRow";
 import TableSearch from "@/components/TableSearch";
-import BulkSelectableTable from "@/components/BulkSelectableTable";
+import BulkSelectableTable, { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 import prisma from "@/lib/prisma";
 import { bulkDeleteTeachers } from "@/lib/actions";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
@@ -239,41 +239,26 @@ const TeacherListPage = async ({
         tableName="teacher"
         deleteAction={bulkDeleteTeachers}
       >
-        {({ selectedIds, toggleSelection, isSelected, selectAll, allSelected, isDeleting }) => (
-          <Table 
-            columns={[
-              ...(role === "admin" ? [{
-                header: "",
-                accessor: "select",
-                className: "w-12",
-              }] : []),
-              ...columns
-            ]}
-            loading={false}
-            emptyMessage="No teachers found matching your search criteria."
-          >
-            {data.map((item, index) => (
-              <TableRow key={item.id} index={index} isPending={isDeleting && isSelected(item.id)}>
-                {role === "admin" && (
-                  <td className="px-3 py-4 text-center">
-                    <label className="relative flex items-center justify-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isSelected(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="peer sr-only"
-                      />
-                      <div className="w-5 h-5 rounded-md border-2 border-surface-300 dark:border-surface-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-all duration-200 flex items-center justify-center">
-                        {isSelected(item.id) && (
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-                  </td>
-                )}
-                <td className="px-6 py-4">
+        <Table 
+          columns={[
+            ...(role === "admin" ? [{
+              header: <BulkSelectionAll allIds={data.map(item => item.id)} />,
+              accessor: "select",
+              className: "w-12",
+            }] : []),
+            ...columns
+          ]}
+          loading={false}
+          emptyMessage="No teachers found matching your search criteria."
+        >
+          {data.map((item, index) => (
+            <TableRow key={item.id} index={index} id={item.id}>
+              {role === "admin" && (
+                <td className="px-3 py-4 text-center">
+                  <BulkSelectionCheckbox id={item.id} />
+                </td>
+              )}
+              <td className="px-6 py-4">
                   <div className="flex gap-4 items-center">
                     <div className="relative group">
                       <div className="absolute -inset-1 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity" />
@@ -381,7 +366,6 @@ const TeacherListPage = async ({
               </TableRow>
             ))}
           </Table>
-        )}
       </BulkSelectableTable>
 
       {/* Pagination */}

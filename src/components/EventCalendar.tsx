@@ -171,41 +171,45 @@ const EventCalendar = ({ events, role, currentUserId }: EventCalendarProps) => {
 
                         {/* Event Details */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h5 className="font-medium text-gray-900 dark:text-white truncate">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h5 className="font-semibold text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-none">
                               {event.title}
                             </h5>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${eventStatus.color}`}>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${eventStatus.color}`}>
                               {eventStatus.label}
                             </span>
                           </div>
                           
                           {event.description && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1 line-clamp-2">
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2 leading-relaxed">
                               {event.description}
                             </p>
                           )}
                           
-                          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                            <span>
-                              {new Date(event.startTime).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })} - {new Date(event.endTime).toLocaleTimeString([], { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                              })}
-                            </span>
-                            <span>•</span>
-                            <span className={`font-medium ${
-                              isSchoolWide 
-                                ? 'text-purple-600 dark:text-purple-400'
-                                : 'text-blue-600 dark:text-blue-400'
-                            }`}>
-                              {isSchoolWide ? 'School-wide' : event.class?.name || 'Unknown Class'}
-                            </span>
-                            <span>•</span>
-                            <span>{getRelativeTime(event.startTime)}</span>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <span className="opacity-50">🕒</span>
+                              <span>
+                                {new Date(event.startTime).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })} - {new Date(event.endTime).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </span>
+                            </div>
+                            <span className="hidden sm:inline opacity-30">•</span>
+                            <div className="flex items-center gap-1">
+                              <span className="opacity-50">📍</span>
+                              <span className={`font-semibold ${
+                                isSchoolWide 
+                                  ? 'text-purple-600 dark:text-purple-400'
+                                  : 'text-blue-600 dark:text-blue-400'
+                              }`}>
+                                {isSchoolWide ? 'School-wide' : event.class?.name || 'Unknown Class'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>

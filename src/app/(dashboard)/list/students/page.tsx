@@ -23,7 +23,7 @@ import {
   PhoneIcon,
   IdentificationIcon
 } from '@heroicons/react/24/outline';
-import BulkSelectableTable from "@/components/BulkSelectableTable";
+import BulkSelectableTable, { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 import { bulkDeleteStudents } from "@/lib/actions";
 
 type StudentList = Student & { class: Class };
@@ -179,38 +179,43 @@ const StudentListPage = async ({
       </div>
 
       {/* Stats Summary Card */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
+      <div className="card p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-6 sm:gap-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
               <UserGroupIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Total Students</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Total Students</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400 shadow-sm border border-accent-100/50 dark:border-accent-500/20">
               <IdentificationIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Active Enrolled</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Active Status</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
 
-          <div className="h-10 w-px bg-surface-100 dark:bg-surface-700/50 hidden md:block" />
-
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <p className="text-xs text-surface-500 dark:text-surface-400 uppercase tracking-wider font-bold mb-1">Boys</p>
-              <p className="text-lg font-bold text-blue-500">{data.filter(s => s.sex === 'MALE').length}</p>
+          <div className="flex items-center gap-6 bg-surface-50 dark:bg-surface-800/50 p-3 rounded-xl border border-dotted border-surface-200 dark:border-surface-700/50 sm:col-span-2 lg:col-span-2">
+            <div className="flex-1 text-center">
+              <p className="text-[10px] text-surface-400 dark:text-surface-500 uppercase tracking-widest font-black mb-1">Male Students</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.filter(s => s.sex === 'MALE').length}</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-surface-500 dark:text-surface-400 uppercase tracking-wider font-bold mb-1">Girls</p>
-              <p className="text-lg font-bold text-pink-500">{data.filter(s => s.sex === 'FEMALE').length}</p>
+            <div className="w-px h-8 bg-surface-200 dark:bg-surface-700 hidden sm:block" />
+            <div className="flex-1 text-center">
+              <p className="text-[10px] text-surface-400 dark:text-surface-500 uppercase tracking-widest font-black mb-1">Female Students</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                <p className="text-xl font-bold text-pink-600 dark:text-pink-400">{data.filter(s => s.sex === 'FEMALE').length}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -235,41 +240,26 @@ const StudentListPage = async ({
         tableName="student"
         deleteAction={bulkDeleteStudents}
       >
-        {({ selectedIds, toggleSelection, isSelected, selectAll, allSelected, isDeleting }) => (
-          <Table 
-            columns={[
-              ...(role === "admin" ? [{
-                header: "",
-                accessor: "select",
-                className: "w-12",
-              }] : []),
-              ...columns
-            ]}
-            loading={false}
-            emptyMessage="No students found matching your search criteria."
-          >
-            {data.map((item, index) => (
-              <TableRow key={item.id} index={index} isPending={isDeleting && isSelected(item.id)}>
-                {role === "admin" && (
-                  <td className="px-3 py-4 text-center">
-                    <label className="relative flex items-center justify-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isSelected(item.id)}
-                        onChange={() => toggleSelection(item.id)}
-                        className="peer sr-only"
-                      />
-                      <div className="w-5 h-5 rounded-md border-2 border-surface-300 dark:border-surface-600 peer-checked:border-primary-500 peer-checked:bg-primary-500 transition-all duration-200 flex items-center justify-center">
-                        {isSelected(item.id) && (
-                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-                  </td>
-                )}
-                <td className="px-6 py-4">
+        <Table 
+          columns={[
+            ...(role === "admin" ? [{
+              header: <BulkSelectionAll allIds={data.map(item => item.id)} />,
+              accessor: "select",
+              className: "w-12",
+            }] : []),
+            ...columns
+          ]}
+          loading={false}
+          emptyMessage="No students found matching your search criteria."
+        >
+          {data.map((item, index) => (
+            <TableRow key={item.id} index={index} id={item.id}>
+              {role === "admin" && (
+                <td className="px-3 py-4 text-center">
+                  <BulkSelectionCheckbox id={item.id} />
+                </td>
+              )}
+              <td className="px-6 py-4">
                   <div className="flex gap-4 items-center">
                     <div className="relative group">
                       <div className="absolute -inset-1 bg-gradient-to-tr from-primary-500 to-accent-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity" />
@@ -358,7 +348,6 @@ const StudentListPage = async ({
               </TableRow>
             ))}
           </Table>
-        )}
       </BulkSelectableTable>
 
       {/* Pagination */}

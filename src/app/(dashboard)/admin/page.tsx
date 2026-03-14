@@ -7,15 +7,25 @@ import FinanceChart from "@/components/FinanceChart";
 import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
+import prisma from "@/lib/prisma";
 
 import { Suspense } from "react";
 import { ChartSkeleton } from "@/components/Skeleton";
 
-const AdminPage = ({
+const AdminPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  const [adminCount, teacherCount, studentCount, parentCount, classCount, eventCount] = await prisma.$transaction([
+    prisma.admin.count(),
+    prisma.teacher.count(),
+    prisma.student.count(),
+    prisma.parent.count(),
+    prisma.class.count(),
+    prisma.event.count(),
+  ]);
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
@@ -32,11 +42,11 @@ const AdminPage = ({
       {/* Quick Stats */}
       <div>
         <h2 className="section-header mb-3">School Overview</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <UserCard type="admin" />
-          <UserCard type="teacher" />
-          <UserCard type="student" />
-          <UserCard type="parent" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <UserCard type="admin" count={adminCount} />
+          <UserCard type="teacher" count={teacherCount} />
+          <UserCard type="student" count={studentCount} />
+          <UserCard type="parent" count={parentCount} />
         </div>
       </div>
 
@@ -53,12 +63,11 @@ const AdminPage = ({
               </div>
               <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
                 <CountChart data={[
-                  { name: 'Teachers', value: 10, color: 'bg-accent-500', href: '/list/teachers' },
-                  { name: 'Students', value: 50, color: 'bg-success-500', href: '/list/students' },
-                  { name: 'Classes', value: 6, color: 'bg-primary-500', href: '/list/classes' },
-                  { name: 'Parents', value: 25, color: 'bg-warning-500', href: '/list/parents' },
-                  { name: 'Events', value: 2, color: 'bg-danger-500', href: '/list/events' },
-                  { name: 'Ongoing', value: 1, color: 'bg-warning-400' },
+                  { name: 'Teachers', value: teacherCount, color: 'bg-accent-500', href: '/list/teachers' },
+                  { name: 'Students', value: studentCount, color: 'bg-success-500', href: '/list/students' },
+                  { name: 'Classes', value: classCount, color: 'bg-primary-500', href: '/list/classes' },
+                  { name: 'Parents', value: parentCount, color: 'bg-warning-500', href: '/list/parents' },
+                  { name: 'Events', value: eventCount, color: 'bg-danger-500', href: '/list/events' },
                 ]} />
               </div>
             </div>

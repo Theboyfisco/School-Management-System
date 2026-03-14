@@ -6,6 +6,7 @@ import EventCalendarContainer from "@/components/EventCalendarContainer";
 import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
+import prisma from "@/lib/prisma";
 
 import { createClient } from "@/utils/supabase/server";
 
@@ -15,7 +16,11 @@ const StudentPage = async ({
   searchParams: { [key: string]: string | undefined };
 }) => {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const [userRes, studentCount] = await Promise.all([
+    supabase.auth.getUser(),
+    prisma.student.count(),
+  ]);
+  const user = userRes.data.user;
   const currentUserId = user?.id || "student123";
 
   return (
@@ -35,7 +40,7 @@ const StudentPage = async ({
       <div>
         <h2 className="section-header mb-3">My Overview</h2>
         <div className="grid grid-cols-1 gap-4">
-          <UserCard type="student" />
+          <UserCard type="student" count={studentCount} />
         </div>
       </div>
 

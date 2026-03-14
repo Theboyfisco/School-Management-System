@@ -7,12 +7,18 @@ import Performance from "@/components/Performance";
 import Messages from "@/components/Messages";
 import QuickActionsWrapper from "@/components/QuickActionsWrapper";
 import UserCard from "@/components/UserCard";
+import prisma from "@/lib/prisma";
 
-const TeacherPage = ({
+const TeacherPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
+  const [teacherCount, studentCount] = await prisma.$transaction([
+    prisma.teacher.count(),
+    prisma.student.count(),
+  ]);
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
@@ -30,8 +36,8 @@ const TeacherPage = ({
       <div>
         <h2 className="section-header mb-3">Teaching Overview</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <UserCard type="teacher" />
-          <UserCard type="student" />
+          <UserCard type="teacher" count={teacherCount} />
+          <UserCard type="student" count={studentCount} />
         </div>
       </div>
 
@@ -48,12 +54,8 @@ const TeacherPage = ({
               </div>
               <div className="flex-1 p-4 flex items-center justify-center min-h-[300px]">
                 <CountChart data={[
-                  { name: 'Teachers', value: 1, color: 'bg-accent-500' },
-                  { name: 'Students', value: 30, color: 'bg-success-500' },
-                  { name: 'Classes', value: 2, color: 'bg-primary-500' },
-                  { name: 'Parents', value: 15, color: 'bg-warning-500' },
-                  { name: 'Events', value: 1, color: 'bg-danger-500' },
-                  { name: 'Ongoing', value: 0, color: 'bg-warning-400' },
+                  { name: 'Teachers', value: teacherCount, color: 'bg-accent-500' },
+                  { name: 'Students', value: studentCount, color: 'bg-success-500' },
                 ]} />
               </div>
             </div>

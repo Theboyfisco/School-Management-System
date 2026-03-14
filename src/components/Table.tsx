@@ -5,7 +5,7 @@ import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { TableSkeleton } from './Skeleton';
 
 interface Column {
-  header: string;
+  header: React.ReactNode;
   accessor: string;
   className?: string;
   sortable?: boolean;

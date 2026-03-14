@@ -1,4 +1,6 @@
-import { createClient } from "@/utils/supabase/server";
+"use client";
+
+import { useUser } from "@/hooks/useUser";
 import MenuClient from "./MenuClient";
 
 const menuItems = [
@@ -179,10 +181,13 @@ const menuItems = [
   },
 ];
 
-const Menu = async () => {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const role = user?.user_metadata?.role?.toLowerCase() as string;
+const Menu = () => {
+  const { user, loading } = useUser();
+  const role = (user?.user_metadata?.role?.toLowerCase() as string) || "student";
+
+  if (loading) return <div className="animate-pulse space-y-4 px-4 py-6">
+    {[1,2,3,4,5].map(i => <div key={i} className="h-10 bg-surface-100 dark:bg-surface-800 rounded-lg w-full" />)}
+  </div>;
 
   const filteredSections = menuItems.map(section => ({
     ...section,

@@ -1,15 +1,30 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useBulkSelection } from "./BulkSelectableTable";
 
 interface TableRowProps {
   children: React.ReactNode;
   index: number;
+  id?: string | number;
   isPending?: boolean;
 }
 
-const TableRow = ({ children, index, isPending }: TableRowProps) => {
+const TableRow = ({ children, index, id, isPending: manualPending }: TableRowProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Try to get bulk selection context
+  let isSelected = false;
+  let isDeleting = false;
+  try {
+    const context = useBulkSelection();
+    isSelected = id ? context.isSelected(id) : false;
+    isDeleting = context.isDeleting;
+  } catch {
+    // Context not available, ignore
+  }
+
+  const isPending = manualPending || (isDeleting && isSelected);
 
   return (
     <tr

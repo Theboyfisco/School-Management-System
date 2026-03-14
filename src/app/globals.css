@@ -315,6 +315,23 @@
 /* ═══════════════════════════════════════════
    Print Styles
    ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   Sidebar Responsive Logic
+   ═══════════════════════════════════════════ */
+@layer utilities {
+  /* Default: labels are hidden on desktop if sidebar is NOT open (collapsed state) */
+  [data-sidebar-open="false"] .sidebar-label {
+    @apply lg:hidden;
+  }
+
+  /* On mobile (managed by DashboardLayout), Menu is only rendered when it's open, 
+     but we ensure labels show up in the wide mobile drawer regardless of isOpen prop value 
+     if it's inside the fixed mobile sidebar container */
+  .lg\:hidden .sidebar-label {
+    display: inline-block !important;
+  }
+}
+
 @media print {
   .no-print {
     display: none !important;

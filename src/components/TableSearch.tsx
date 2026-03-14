@@ -27,7 +27,7 @@ const TableSearch = ({ placeholder }: { placeholder?: string }) => {
       <input
         type="text"
         placeholder={placeholder || "Search..."}
-        className="bg-transparent outline-none text-sm text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 w-[200px] lg:w-[280px] font-medium"
+        className="bg-transparent outline-none text-sm text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 w-full md:w-[200px] lg:w-[320px] font-medium"
       />
     </form>
   );

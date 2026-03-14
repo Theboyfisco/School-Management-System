@@ -129,7 +129,7 @@ function MessageModal({ id, onClose }: { id: number|null, onClose: () => void })
 }
 
 const Messages = ({ externalRefresh }: { externalRefresh?: boolean }) => {
-  const { data = [], mutate } = useSWR("/api/messages", fetcher);
+  const { data = [], mutate } = useSWR("/api/messages", fetcher, { refreshInterval: 60000, revalidateOnFocus: false });
   const router = useRouter();
   const [modalId, setModalId] = useState<number|null>(null);
 

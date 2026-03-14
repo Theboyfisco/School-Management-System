@@ -2,8 +2,10 @@ import prisma from "@/lib/prisma";
 
 const UserCard = async ({
   type,
+  count,
 }: {
   type: "admin" | "teacher" | "student" | "parent";
+  count?: number;
 }) => {
   const modelMap: Record<typeof type, any> = {
     admin: prisma.admin,
@@ -12,7 +14,7 @@ const UserCard = async ({
     parent: prisma.parent,
   };
 
-  const data = await modelMap[type].count();
+  const data = count !== undefined ? count : await modelMap[type].count();
 
   const config = {
     admin: {
@@ -71,8 +73,8 @@ const UserCard = async ({
       </div>
       
       <div>
-        <h2 className="text-3xl font-bold text-surface-900 dark:text-white font-display">{data}</h2>
-        <p className="capitalize text-sm text-surface-500 dark:text-surface-400 mt-0.5 font-medium">{type}s</p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white font-display tracking-tight">{data}</h2>
+        <p className="capitalize text-xs sm:text-sm text-surface-500 dark:text-surface-400 mt-0.5 font-medium tracking-wide">{type}s</p>
       </div>
     </div>
   );
