@@ -8,12 +8,29 @@ const TableSearch = ({ placeholder }: { placeholder?: string }) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const value = (e.currentTarget.elements.namedItem("search") as HTMLInputElement).value;
+    updateSearch(value);
+  };
 
-    const value = (e.currentTarget[0] as HTMLInputElement).value;
-
+  const updateSearch = (value: string) => {
     const params = new URLSearchParams(window.location.search);
-    params.set("search", value);
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1"); // Reset to first page on new search
     router.push(`${window.location.pathname}?${params}`);
+  };
+
+  // Debounced search for better UX
+  let timeout: NodeJS.Timeout;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      updateSearch(value);
+    }, 500);
   };
 
   return (
@@ -26,6 +43,9 @@ const TableSearch = ({ placeholder }: { placeholder?: string }) => {
       </button>
       <input
         type="text"
+        name="search"
+        defaultValue={new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get("search") || ""}
+        onChange={handleChange}
         placeholder={placeholder || "Search..."}
         className="bg-transparent outline-none text-sm text-surface-900 dark:text-surface-100 placeholder-surface-400 dark:placeholder-surface-500 w-full md:w-[200px] lg:w-[320px] font-medium"
       />

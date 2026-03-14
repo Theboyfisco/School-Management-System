@@ -156,7 +156,7 @@ const ResultListPage = async ({
     orderBy.id = 'desc';
   }
 
-  const [dataRes, count] = await prisma.$transaction([
+  const [dataRes, count, exams, assignments, students] = await prisma.$transaction([
     prisma.result.findMany({
       where: query,
       include: {
@@ -187,7 +187,12 @@ const ResultListPage = async ({
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.result.count({ where: query }),
+    prisma.exam.findMany({ select: { id: true, title: true } }),
+    prisma.assignment.findMany({ select: { id: true, title: true } }),
+    prisma.student.findMany({ select: { id: true, name: true, surname: true } }),
   ]);
+
+  const relatedData = { exams, assignments, students };
 
   const data = dataRes
     .map((item) => {
@@ -229,7 +234,7 @@ const ResultListPage = async ({
         
         <div className="flex items-center gap-3">
           {(role === "admin" || role === "teacher") && (
-            <FormContainer table="result" type="create">
+            <FormContainer table="result" type="create" relatedData={relatedData}>
               <button className="btn btn-primary gap-2">
                 <PlusIcon className="w-5 h-5" />
                 <span>Add Result</span>
@@ -240,39 +245,37 @@ const ResultListPage = async ({
       </div>
 
       {/* Stats Summary Card */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
+      <div className="card p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center gap-6 sm:gap-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
               <ChartBarIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Total Results</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Total Results</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400">
+          <div className="flex items-center gap-4 sm:border-l sm:dark:border-surface-700/50 sm:pl-8">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400 shadow-sm border border-success-100/50 dark:border-success-500/20">
               <StarIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Average Score</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Average Score</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">
                 {averageScore.toFixed(1)}%
               </p>
             </div>
           </div>
-
-          <div className="h-10 w-px bg-surface-100 dark:bg-surface-700/50 hidden md:block" />
-
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400">
+ 
+          <div className="flex items-center gap-4 lg:border-l lg:dark:border-surface-700/50 lg:pl-8 sm:col-span-2 lg:col-span-1 border-t sm:border-t-0 pt-6 sm:pt-0 sm:mt-0">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400 shadow-sm border border-accent-100/50 dark:border-accent-500/20">
               <AcademicCapIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Students</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Unique Students</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">
                 {new Set(data.map(result => result.studentName + result.studentSurname)).size}
               </p>
             </div>
@@ -394,7 +397,7 @@ const ResultListPage = async ({
                       <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                     </button>
                   </Link>
-                  <FormContainer table="result" type="update" data={item}>
+                  <FormContainer table="result" type="update" data={item} relatedData={relatedData}>
                     <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Result">
                       <PencilIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                     </button>

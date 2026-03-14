@@ -479,7 +479,7 @@ const EventListPage = async ({
                         <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                       </button>
                     </Link>
-                    <FormContainer table="event" type="update" data={item}>
+                    <FormContainer table="event" type="update" data={item} relatedData={{ classes: filterOptions.classes }}>
                       <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Event">
                         <PencilIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                       </button>

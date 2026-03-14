@@ -121,7 +121,7 @@ const ExamListPage = async ({
     orderBy.startTime = 'asc';
   }
 
-  const [data, count] = await prisma.$transaction([
+  const [data, count, lessons] = await prisma.$transaction([
     prisma.exam.findMany({
       where: query,
       include: {
@@ -139,7 +139,10 @@ const ExamListPage = async ({
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.exam.count({ where: query }),
+    prisma.lesson.findMany({ select: { id: true, name: true } }),
   ]);
+
+  const relatedData = { lessons };
 
   return (
     <div className="space-y-6">
@@ -152,7 +155,7 @@ const ExamListPage = async ({
         
         <div className="flex items-center gap-3">
           {role === "admin" && (
-            <FormContainer table="exam" type="create">
+            <FormContainer table="exam" type="create" relatedData={relatedData}>
               <button className="btn btn-primary gap-2">
                 <PlusIcon className="w-5 h-5" />
                 <span>New Exam</span>
@@ -163,39 +166,37 @@ const ExamListPage = async ({
       </div>
 
       {/* Stats Summary Card */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-danger-50 dark:bg-danger-500/10 flex items-center justify-center text-danger-600 dark:text-danger-400">
+      <div className="card p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-center gap-6 sm:gap-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-danger-50 dark:bg-danger-500/10 flex items-center justify-center text-danger-600 dark:text-danger-400 shadow-sm border border-danger-100/50 dark:border-danger-500/20">
               <DocumentTextIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Total Exams</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Total Exams</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400">
+          <div className="flex items-center gap-4 sm:border-l sm:dark:border-surface-700/50 sm:pl-8">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 flex items-center justify-center text-success-600 dark:text-success-400 shadow-sm border border-success-100/50 dark:border-success-500/20">
               <CalendarIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Upcoming</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Upcoming</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">
                 {data.filter(exam => new Date(exam.startTime) > new Date()).length}
               </p>
             </div>
           </div>
-
-          <div className="h-10 w-px bg-surface-100 dark:bg-surface-700/50 hidden md:block" />
-
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400">
+          
+          <div className="flex items-center gap-4 lg:border-l lg:dark:border-surface-700/50 lg:pl-8 sm:col-span-2 lg:col-span-1 border-t sm:border-t-0 pt-6 sm:pt-0 sm:mt-0">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400 shadow-sm border border-accent-100/50 dark:border-accent-500/20">
               <AcademicCapIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Subjects</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Subjects</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">
                 {new Set(data.map(exam => exam.lesson?.subject?.name).filter(Boolean)).size}
               </p>
             </div>
@@ -306,7 +307,7 @@ const ExamListPage = async ({
                       <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                     </button>
                   </Link>
-                  <FormContainer table="exam" type="update" data={item}>
+                  <FormContainer table="exam" type="update" data={item} relatedData={relatedData}>
                     <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Exam">
                       <PencilIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                     </button>

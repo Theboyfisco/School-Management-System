@@ -20,8 +20,13 @@ export function useUser() {
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
+      async (_event, session) => {
+        if (session) {
+          const { data: { user } } = await supabase.auth.getUser();
+          setUser(user);
+        } else {
+          setUser(null);
+        }
       }
     );
 

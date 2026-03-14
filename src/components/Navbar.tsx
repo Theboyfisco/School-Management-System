@@ -22,6 +22,7 @@ import {
   XMarkIcon
 } from "@heroicons/react/24/outline";
 import { useSidebar } from "@/context/SidebarContext";
+import { useRealtime } from "@/hooks/useRealtime";
 
 const unreadFetcher = async (url: string) => {
   const res = await fetch(url);
@@ -51,6 +52,15 @@ const Navbar = () => {
   const { data: unreadMessagesData, mutate: mutateUnreadMessages } = useSWR("/api/messages/unread-count", unreadFetcher, { refreshInterval: 60000, revalidateOnFocus: false });
   const unreadMessagesCount = unreadMessagesData?.count || 0;
   const [showMessages, setShowMessages] = useState(false);
+
+  // Realtime updates for notifications
+  useRealtime("announcement", () => {
+    mutateUnread();
+  });
+
+  useRealtime("message", () => {
+    mutateUnreadMessages();
+  });
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -156,7 +166,7 @@ const Navbar = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
                   >
                     <div className="p-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-white">Recent Messages</div>
                     <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
@@ -209,7 +219,7 @@ const Navbar = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-[calc(100vw-32px)] sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 overflow-hidden"
                   >
                     <div className="p-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-white">Recent Announcements</div>
                     <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">

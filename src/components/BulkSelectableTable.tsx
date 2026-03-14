@@ -29,6 +29,8 @@ interface BulkSelectableTableProps {
   allIds: (string | number)[];
   tableName: string;
   deleteAction: (ids: (string | number)[]) => Promise<{ success: boolean; error: boolean; message?: string }>;
+  onExport?: (ids: (string | number)[]) => void;
+  onAssignClass?: (ids: (string | number)[]) => void;
 }
 
 const BulkSelectableTable = ({
@@ -36,6 +38,8 @@ const BulkSelectableTable = ({
   allIds,
   tableName,
   deleteAction,
+  onExport,
+  onAssignClass,
 }: BulkSelectableTableProps) => {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -92,6 +96,8 @@ const BulkSelectableTable = ({
           return result;
         }}
         onSuccess={handleSuccess}
+        onExport={onExport}
+        onAssignClass={onAssignClass}
       />
     </BulkSelectionContext.Provider>
   );

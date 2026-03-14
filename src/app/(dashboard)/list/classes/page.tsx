@@ -109,7 +109,7 @@ const ClassListPage = async ({
     orderBy.name = 'asc';
   }
 
-  const [data, count] = await prisma.$transaction([
+  const [data, count, grades, teachers] = await prisma.$transaction([
     prisma.class.findMany({
       where: query,
       select: {
@@ -137,7 +137,11 @@ const ClassListPage = async ({
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.class.count({ where: query }),
+    prisma.grade.findMany({ select: { id: true, level: true } }),
+    prisma.teacher.findMany({ select: { id: true, name: true, surname: true } }),
   ]);
+
+  const relatedData = { grades, teachers };
 
   return (
     <div className="space-y-6">
@@ -150,7 +154,7 @@ const ClassListPage = async ({
         
         <div className="flex items-center gap-3">
           {role === "admin" && (
-            <FormContainer table="class" type="create">
+            <FormContainer table="class" type="create" relatedData={relatedData}>
               <button className="btn btn-primary gap-2">
                 <PlusIcon className="w-5 h-5" />
                 <span>Add Class</span>
@@ -161,25 +165,25 @@ const ClassListPage = async ({
       </div>
 
       {/* Stats Summary Card */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
+      <div className="card p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6 sm:gap-12">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
               <AcademicCapIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Total Classes</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Total Classes</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400">
+          <div className="flex items-center gap-4 sm:border-l sm:dark:border-surface-700/50 sm:pl-8 lg:pl-12">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400 shadow-sm border border-accent-100/50 dark:border-accent-500/20">
               <UserGroupIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Students Enrolled</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Students Enrolled</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">
                 {data.reduce((acc, cls) => acc + cls.students.length, 0)}
               </p>
             </div>
@@ -297,7 +301,7 @@ const ClassListPage = async ({
                       <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                     </button>
                   </Link>
-                  <FormContainer table="class" type="update" data={item}>
+                  <FormContainer table="class" type="update" data={item} relatedData={relatedData}>
                     <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Class">
                       <PencilSquareIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                     </button>

@@ -1788,3 +1788,23 @@ export const bulkDeleteEvents = async (ids: (string | number)[]): Promise<{ succ
     return { success: false, error: true, message: "Failed to delete events" };
   }
 };
+
+export const bulkAssignStudentsToClass = async (studentIds: (string | number)[], classId: number): Promise<{ success: boolean; error: boolean; message?: string }> => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const role = user?.user_metadata?.role as string;
+    if (role !== "admin") return { success: false, error: true, message: "Only admins can perform bulk actions" };
+
+    await prisma.student.updateMany({
+      where: { id: { in: studentIds.map(String) } },
+      data: { classId: typeof classId === 'string' ? parseInt(classId) : classId },
+    });
+
+    revalidatePath("/list/students");
+    return { success: true, error: false, message: `Successfully assigned ${studentIds.length} student(s)` };
+  } catch (err) {
+    console.error("Bulk assign students error:", err);
+    return { success: false, error: true, message: "Failed to assign students to class" };
+  }
+};

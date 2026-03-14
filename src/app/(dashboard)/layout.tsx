@@ -63,7 +63,7 @@ function DashboardInner({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 bottom-0 w-[280px] bg-white dark:bg-surface-800 shadow-2xl z-[70] flex flex-col lg:hidden"
+              className="fixed top-0 left-0 bottom-0 w-[85vw] max-w-[300px] bg-white dark:bg-surface-800 shadow-2xl z-[70] flex flex-col lg:hidden"
             >
               <div className="px-6 py-5 border-b border-surface-100 dark:border-surface-700/50 flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-3" onClick={toggle}>

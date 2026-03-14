@@ -10,6 +10,8 @@ interface BulkActionBarProps {
   tableName: string;
   deleteAction: (ids: (string | number)[]) => Promise<{ success: boolean; error: boolean; message?: string }>;
   onSuccess?: () => void;
+  onExport?: (ids: (string | number)[]) => void;
+  onAssignClass?: (ids: (string | number)[]) => void;
 }
 
 const BulkActionBar = ({
@@ -18,6 +20,8 @@ const BulkActionBar = ({
   tableName,
   deleteAction,
   onSuccess,
+  onExport,
+  onAssignClass,
 }: BulkActionBarProps) => {
   const [isPending, startTransition] = useTransition();
   const [showConfirm, setShowConfirm] = useState(false);
@@ -74,6 +78,32 @@ const BulkActionBar = ({
 
         {!showConfirm ? (
           <>
+            {onAssignClass && (
+              <button
+                onClick={() => onAssignClass(selectedIds)}
+                disabled={isPending}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-surface-300 dark:text-surface-700 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-colors"
+                title="Assign selected to a class"
+              >
+                <CheckIcon className="w-4 h-4" />
+                Assign
+              </button>
+            )}
+            
+            {onExport && (
+              <button
+                onClick={() => onExport(selectedIds)}
+                disabled={isPending}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-surface-300 dark:text-surface-700 hover:bg-white/10 dark:hover:bg-black/5 rounded-xl transition-colors"
+                title="Export selected as CSV"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Export
+              </button>
+            )}
+
             <button
               onClick={() => setShowConfirm(true)}
               disabled={isPending}

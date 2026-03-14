@@ -334,21 +334,21 @@ const QuickActions = ({ role, className = "" }: QuickActionsProps) => {
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
         {actions.map((action) => (
           <button
             key={action.id}
-            className="w-full flex items-center gap-3 p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="w-full flex items-center gap-3 p-3 text-left rounded-xl border border-surface-100 dark:border-surface-700/50 hover:bg-primary-50 dark:hover:bg-primary-900/10 hover:border-primary-200 transition-all duration-300 group"
             onClick={() => handleActionClick(action)}
           >
-            <div className={`w-8 h-8 ${action.bgColor} rounded-lg flex items-center justify-center`}>
+            <div className={`w-10 h-10 ${action.bgColor} rounded-xl flex items-center justify-center transition-transform group-hover:scale-110`}>
               <div className={action.iconColor}>
                 {action.icon}
               </div>
             </div>
-            <div>
-              <p className="font-medium text-gray-900 dark:text-white">{action.title}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{action.description}</p>
+            <div className="min-w-0">
+              <p className="font-bold text-surface-900 dark:text-white text-sm truncate">{action.title}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 truncate">{action.description}</p>
             </div>
           </button>
         ))}

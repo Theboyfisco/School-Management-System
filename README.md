@@ -124,3 +124,7 @@ This project is licensed under the MIT License.
 ---
 
 **Academia Connect** - Empowering educational institutions with modern technology solutions.
+**Role Email Password**
+Teacher teacher@academia.connect Teacher123!
+Student student@academia.connect Student123!
+Parent parent@academia.connect Parent123!

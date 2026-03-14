@@ -29,7 +29,7 @@ const Pagination = ({ page, count }: { page: number; count: number }) => {
         <span>Prev</span>
       </button>
       
-      <div className="flex items-center gap-1.5">
+      <div className="hidden sm:flex items-center gap-1.5">
         {Array.from({ length: pagesCount }, (_, index) => {
           const pageIndex = index + 1;
           // Only show 5 pages around current page if there are many pages
@@ -54,6 +54,10 @@ const Pagination = ({ page, count }: { page: number; count: number }) => {
             </button>
           );
         })}
+      </div>
+
+      <div className="flex sm:hidden text-xs font-semibold text-surface-500">
+        Page {page} of {pagesCount}
       </div>
 
       <button

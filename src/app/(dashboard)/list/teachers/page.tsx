@@ -3,9 +3,11 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableRow from "@/components/TableRow";
 import TableSearch from "@/components/TableSearch";
-import BulkSelectableTable, { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 import prisma from "@/lib/prisma";
 import { bulkDeleteTeachers } from "@/lib/actions";
+import TeacherListContainer from "./TeacherListContainer";
+import RealtimeAutoRefresh from "@/components/RealtimeAutoRefresh";
+import { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 import { Class, Prisma, Subject, Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
@@ -128,7 +130,7 @@ const TeacherListPage = async ({
     orderBy.name = 'asc';
   }
 
-  const [data, count] = await prisma.$transaction([
+  const [data, count, subjects] = await prisma.$transaction([
     prisma.teacher.findMany({
       where: query,
       select: {
@@ -159,10 +161,14 @@ const TeacherListPage = async ({
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.teacher.count({ where: query }),
+    prisma.subject.findMany({ select: { id: true, name: true } }),
   ]);
+
+  const relatedData = { subjects };
 
   return (
     <div className="space-y-6">
+      <RealtimeAutoRefresh table="teacher" />
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -172,7 +178,7 @@ const TeacherListPage = async ({
         
         <div className="flex items-center gap-3">
           {role === "admin" && (
-            <FormContainer table="teacher" type="create">
+            <FormContainer table="teacher" type="create" relatedData={relatedData}>
               <button className="btn btn-primary gap-2">
                 <PlusIcon className="w-5 h-5" />
                 <span>Add Teacher</span>
@@ -183,38 +189,43 @@ const TeacherListPage = async ({
       </div>
 
       {/* Stats Summary Card */}
-      <div className="card p-4">
-        <div className="flex flex-wrap items-center gap-8 md:gap-12">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400">
+      <div className="card p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 items-center gap-6 sm:gap-8">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-500/10 flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-sm border border-primary-100/50 dark:border-primary-500/20">
               <UserGroupIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Total Teachers</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">{count}</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Total Teachers</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">{count}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-500/10 flex items-center justify-center text-accent-600 dark:text-accent-400 shadow-sm border border-accent-100/50 dark:border-accent-500/20">
               <AcademicCapIcon className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-surface-500 dark:text-surface-400 font-medium">Departments</p>
-              <p className="text-xl font-bold text-surface-900 dark:text-white">12</p>
+              <p className="text-[11px] text-surface-500 dark:text-surface-400 font-bold uppercase tracking-wider">Departments</p>
+              <p className="text-2xl font-bold text-surface-900 dark:text-white leading-tight">12</p>
             </div>
           </div>
 
-          <div className="h-10 w-px bg-surface-100 dark:bg-surface-700/50 hidden md:block" />
-
-          <div className="flex items-center gap-6">
-            <div className="text-center">
-              <p className="text-xs text-surface-500 dark:text-surface-400 uppercase tracking-wider font-bold mb-1">Male</p>
-              <p className="text-lg font-bold text-blue-500">{data.filter(t => t.sex === 'MALE').length}</p>
+          <div className="flex items-center gap-6 bg-surface-50 dark:bg-surface-800/50 p-3 rounded-xl border border-dotted border-surface-200 dark:border-surface-700/50 sm:col-span-2 lg:col-span-2">
+            <div className="flex-1 text-center">
+              <p className="text-[10px] text-surface-400 dark:text-surface-500 uppercase tracking-widest font-black mb-1">Male Faculty</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{data.filter(t => t.sex === 'MALE').length}</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-xs text-surface-500 dark:text-surface-400 uppercase tracking-wider font-bold mb-1">Female</p>
-              <p className="text-lg font-bold text-pink-500">{data.filter(t => t.sex === 'FEMALE').length}</p>
+            <div className="w-px h-8 bg-surface-200 dark:bg-surface-700 hidden sm:block" />
+            <div className="flex-1 text-center">
+              <p className="text-[10px] text-surface-400 dark:text-surface-500 uppercase tracking-widest font-black mb-1">Female Faculty</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                <p className="text-xl font-bold text-pink-600 dark:text-pink-400">{data.filter(t => t.sex === 'FEMALE').length}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -234,10 +245,9 @@ const TeacherListPage = async ({
       </div>
 
       {/* Main Table with Bulk Selection */}
-      <BulkSelectableTable
+      <TeacherListContainer
+        data={data}
         allIds={data.map(item => item.id)}
-        tableName="teacher"
-        deleteAction={bulkDeleteTeachers}
       >
         <Table 
           columns={[
@@ -350,7 +360,7 @@ const TeacherListPage = async ({
                           <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                         </button>
                       </Link>
-                      <FormContainer table="teacher" type="update" data={item}>
+                      <FormContainer table="teacher" type="update" data={item} relatedData={relatedData}>
                         <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Teacher">
                           <PencilSquareIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                         </button>
@@ -366,7 +376,7 @@ const TeacherListPage = async ({
               </TableRow>
             ))}
           </Table>
-      </BulkSelectableTable>
+      </TeacherListContainer>
 
       {/* Pagination */}
       <Pagination page={p} count={count} />

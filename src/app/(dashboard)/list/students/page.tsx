@@ -23,8 +23,10 @@ import {
   PhoneIcon,
   IdentificationIcon
 } from '@heroicons/react/24/outline';
-import BulkSelectableTable, { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 import { bulkDeleteStudents } from "@/lib/actions";
+import StudentListContainer from "./StudentListContainer";
+import RealtimeAutoRefresh from "@/components/RealtimeAutoRefresh";
+import { BulkSelectionAll, BulkSelectionCheckbox } from "@/components/BulkSelectableTable";
 
 type StudentList = Student & { class: Class };
 
@@ -130,7 +132,7 @@ const StudentListPage = async ({
     orderBy.name = 'asc';
   }
 
-  const [data, count] = await prisma.$transaction([
+  const [data, count, grades, classes] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
       select: {
@@ -155,10 +157,15 @@ const StudentListPage = async ({
       skip: ITEM_PER_PAGE * (p - 1),
     }),
     prisma.student.count({ where: query }),
+    prisma.grade.findMany({ select: { id: true, level: true } }),
+    prisma.class.findMany({ include: { _count: { select: { students: true } } } }),
   ]);
+
+  const relatedData = { grades, classes };
 
   return (
     <div className="space-y-6">
+      <RealtimeAutoRefresh table="student" />
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -168,7 +175,7 @@ const StudentListPage = async ({
         
         <div className="flex items-center gap-3">
           {role === "admin" && (
-            <FormContainer table="student" type="create">
+            <FormContainer table="student" type="create" relatedData={relatedData}>
               <button className="btn btn-primary gap-2">
                 <PlusIcon className="w-5 h-5" />
                 <span>Add Student</span>
@@ -235,10 +242,9 @@ const StudentListPage = async ({
       </div>
 
       {/* Main Table */}
-      <BulkSelectableTable
+      <StudentListContainer
+        data={data}
         allIds={data.map(item => item.id)}
-        tableName="student"
-        deleteAction={bulkDeleteStudents}
       >
         <Table 
           columns={[
@@ -291,7 +297,7 @@ const StudentListPage = async ({
                     {item.username}
                   </span>
                 </td>
-
+                
                 <td className="hidden md:table-cell px-6 py-4">
                   <span className="badge badge-primary">
                     Grade {item.class.name.charAt(0)}
@@ -332,7 +338,7 @@ const StudentListPage = async ({
                           <EyeIcon className="w-4 h-4 text-surface-400 group-hover:text-primary-500" />
                         </button>
                       </Link>
-                      <FormContainer table="student" type="update" data={item}>
+                      <FormContainer table="student" type="update" data={item} relatedData={relatedData}>
                         <button className="btn btn-secondary btn-icon btn-sm group" title="Edit Student">
                           <PencilSquareIcon className="w-4 h-4 text-surface-400 group-hover:text-amber-500" />
                         </button>
@@ -348,7 +354,7 @@ const StudentListPage = async ({
               </TableRow>
             ))}
           </Table>
-      </BulkSelectableTable>
+      </StudentListContainer>
 
       {/* Pagination */}
       <Pagination page={p} count={count} />

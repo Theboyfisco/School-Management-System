@@ -96,7 +96,8 @@ const TeacherForm = ({
   const steps = [
     { label: "Account & Basics", icon: <UserIcon className="w-5 h-5" /> },
     { label: "Contact Details", icon: <PhoneIcon className="w-5 h-5" /> },
-    { label: "Professional Info", icon: <AcademicCapIcon className="w-5 h-5" /> }
+    { label: "Professional Info", icon: <AcademicCapIcon className="w-5 h-5" /> },
+    { label: "Review & Confirm", icon: <CheckCircleIcon className="w-5 h-5" /> }
   ];
 
   const nextStep = async () => {
@@ -105,6 +106,8 @@ const TeacherForm = ({
       fieldsToValidate = ['username', 'email', ...(type === 'create' ? ['password'] : []), 'name', 'surname', 'sex', 'bloodType'];
     } else if (currentStep === 1) {
       fieldsToValidate = ['phone', 'birthday', 'address'];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ['subjects'];
     }
 
     const isValid = await trigger(fieldsToValidate as any);
@@ -410,26 +413,111 @@ const TeacherForm = ({
         </div>
       )}
 
-      {/* Step 3: Professional Info */}
-      {currentStep === 2 && (
-        <div className="space-y-10 animate-fade-in">
-          <div className="space-y-6">
-            <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
-              <AcademicCapIcon className="w-4 h-4" />
-              Teaching Assignments
-            </h3>
-            <CustomDropdown
-                label="Departmental Subjects"
-                name="subjects"
-                options={subjectOptions}
-                value={watch("subjects")}
-                onChange={(val) => setValue("subjects", val as any[])}
-                multiSelect
-                searchable
-                placeholder="Choose faculty subjects"
-                required
-                helperText="Select all relevant expertise areas"
-            />
+      {/* Step 4: Review & Confirm */}
+      {currentStep === 3 && (
+        <div className="space-y-8 animate-fade-in">
+          <div className="bg-surface-50 dark:bg-surface-800/40 rounded-[2rem] p-8 border border-surface-200 dark:border-surface-700/50 shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-primary-100 dark:bg-primary-500/20 flex items-center justify-center text-primary-600 dark:text-primary-400">
+                <CheckCircleIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Review Enrollment</h3>
+                <p className="text-sm text-surface-500 dark:text-surface-400">Please verify all details are correct before finalizing.</p>
+              </div>
+            </div>
+            
+            <div className="space-y-8">
+              {/* Section 1: Identity */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="sm:col-span-1">
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden border-4 border-white dark:border-surface-800 shadow-lg">
+                    {img ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={img.secure_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-surface-200 dark:bg-surface-700 flex items-center justify-center">
+                        <UserIcon className="w-8 h-8 text-surface-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="sm:col-span-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Full Name</p>
+                    <p className="text-base font-bold text-surface-900 dark:text-white">{watch("name")} {watch("surname")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Portal Handle</p>
+                    <p className="text-base font-medium text-primary-600 dark:text-primary-400">@{watch("username")}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-surface-200 dark:bg-surface-700/50" />
+
+              {/* Section 2: Contact & Bio */}
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Email Address</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <EnvelopeIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("email")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Contact Number</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <PhoneIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("phone")}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Residential Address</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <MapPinIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("address")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Medical (Blood Type)</p>
+                    <p className="text-sm font-medium inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20">
+                       {watch("bloodType")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-surface-200 dark:bg-surface-700/50" />
+
+              {/* Section 3: Professional */}
+              <div>
+                <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-3">Academic Subjects</p>
+                <div className="flex flex-wrap gap-2">
+                  {watch("subjects")?.map((subId: any) => {
+                    const subName = subjects.find((s: any) => String(s.id) === String(subId))?.name || subId;
+                    return (
+                      <span key={subId} className="px-3 py-1 bg-surface-100 dark:bg-surface-800 rounded-lg text-xs font-bold border border-surface-200 dark:border-surface-700">
+                        {subName}
+                      </span>
+                    );
+                  })}
+                  {(watch("subjects")?.length ?? 0) === 0 && <span className="text-sm text-surface-400 italic">No subjects selected</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 p-4 bg-primary-50 dark:bg-primary-500/5 border border-primary-100 dark:border-primary-500/20 rounded-2xl">
+             <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
+                <CheckCircleIcon className="w-3.5 h-3.5 text-white" />
+             </div>
+             <p className="text-xs font-medium text-primary-700 dark:text-primary-300">
+                By completing setup, you are creating a new faculty portal account with the identifiers listed above.
+             </p>
           </div>
         </div>
       )}

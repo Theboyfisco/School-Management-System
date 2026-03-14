@@ -94,7 +94,8 @@ const StudentForm = ({
   const steps = [
     { label: "Portal & Profile", icon: <UserIcon className="w-5 h-5" /> },
     { label: "Contact Info", icon: <PhoneIcon className="w-5 h-5" /> },
-    { label: "Academic Status", icon: <AcademicCapIcon className="w-5 h-5" /> }
+    { label: "Academic Status", icon: <AcademicCapIcon className="w-5 h-5" /> },
+    { label: "Review & Confirm", icon: <CheckCircleIcon className="w-5 h-5" /> }
   ];
 
   const nextStep = async () => {
@@ -424,49 +425,107 @@ const StudentForm = ({
         </div>
       )}
 
-      {/* Step 3: Academic Status */}
-      {currentStep === 2 && (
-        <div className="space-y-10 animate-fade-in">
-          {/* Academic & Parent Info */}
-          <div className="space-y-6">
-            <h3 className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] flex items-center gap-2">
-              <AcademicCapIcon className="w-4 h-4" />
-              Academic Status
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <CustomDropdown
-                label="Enrollment Grade"
-                name="gradeId"
-                options={gradeOptions}
-                value={watch("gradeId") || undefined}
-                onChange={(val) => setValue("gradeId", val as any)}
-                placeholder="Grade"
-                required
-                searchable
-              />
-              <CustomDropdown
-                label="Assigned Class"
-                name="classId"
-                options={classOptions}
-                value={watch("classId") || undefined}
-                onChange={(val) => setValue("classId", val as any)}
-                placeholder="Class"
-                required
-                searchable
-              />
+      {/* Step 4: Review & Confirm */}
+      {currentStep === 3 && (
+        <div className="space-y-8 animate-fade-in">
+          <div className="bg-surface-50 dark:bg-surface-800/40 rounded-[2rem] p-8 border border-surface-200 dark:border-surface-700/50 shadow-sm">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <CheckCircleIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-surface-900 dark:text-white font-display">Enrollment Review</h3>
+                <p className="text-sm text-surface-500 dark:text-surface-400">Verify student information before final registration.</p>
+              </div>
             </div>
-            <div className="pt-2">
-              <CustomDropdown
-                label="Parent/Guardian"
-                name="parentId"
-                options={parentOptions}
-                value={watch("parentId")}
-                onChange={(val) => setValue("parentId", val as any)}
-                placeholder="Select parent or guardian"
-                required
-                searchable
-                icon={<UserGroupIcon className="w-4 h-4" />}
-              />
+            
+            <div className="space-y-8">
+              {/* Section 1: Identity & Parent */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                <div className="sm:col-span-1">
+                  <div className="w-24 h-24 rounded-[1.5rem] overflow-hidden border-4 border-white dark:border-surface-800 shadow-xl mx-auto sm:mx-0">
+                    {img ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={img.secure_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-surface-200 dark:bg-surface-700 flex items-center justify-center">
+                        <UserIcon className="w-10 h-10 text-surface-400" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="sm:col-span-2 grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Full Student Name</p>
+                    <p className="text-base font-bold text-surface-900 dark:text-white">{watch("name")} {watch("surname")}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Student Portal ID</p>
+                    <p className="text-base font-medium text-indigo-600 dark:text-indigo-400">@{watch("username")}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Parent / Guardian</p>
+                    <p className="text-sm font-bold flex items-center gap-2 text-surface-700 dark:text-surface-300">
+                      <UserGroupIcon className="w-4 h-4 text-surface-400" />
+                      {parents.find((p: any) => String(p.id) === String(watch("parentId")))?.name} {parents.find((p: any) => String(p.id) === String(watch("parentId")))?.surname || "Selected Parent"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-surface-200 dark:bg-surface-700/50" />
+
+              {/* Section 2: Contact & Academic */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Academic Status</p>
+                    <div className="flex gap-2">
+                      <span className="badge badge-primary">
+                        Grade {grades.find((g: any) => g.id === watch("gradeId"))?.level || "?"}
+                      </span>
+                      <span className="badge badge-indigo">
+                        Class {classes.find((c: any) => c.id === watch("classId"))?.name || "?"}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Contact Email</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <EnvelopeIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("email")}
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Primary Phone</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <PhoneIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("phone")}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest mb-1">Address & Residency</p>
+                    <p className="text-sm font-medium flex items-center gap-2">
+                       <MapPinIcon className="w-3.5 h-3.5 text-surface-400" />
+                       {watch("address")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-px bg-surface-200 dark:bg-surface-700/50" />
+
+              {/* Section 3: Summary Insight */}
+              <div className="flex items-center gap-4 bg-indigo-50/50 dark:bg-indigo-500/5 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/10">
+                 <div className="p-2 bg-white dark:bg-surface-800 rounded-xl shadow-sm">
+                    <AcademicCapIcon className="w-5 h-5 text-indigo-500" />
+                 </div>
+                 <p className="text-xs font-medium text-indigo-700 dark:text-indigo-300 leading-relaxed">
+                   The student will be enrolled in Grade {grades.find((g: any) => g.id === watch("gradeId"))?.level} - {classes.find((c: any) => c.id === watch("classId"))?.name} and will have access to the student portal using the handle provided.
+                 </p>
+              </div>
             </div>
           </div>
         </div>
